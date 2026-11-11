@@ -1,0 +1,21 @@
+{
+  "experiment": "phase01_directions",
+  "status": "implemented",
+  "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "seed": 0,
+  "layers": null,
+  "batch_size": 8,
+  "max_new_tokens": 80,
+  "n_splits": 5,
+  "probe_C": 0.5,
+  "probe_max_iter": 2000,
+  "steering_emotion": "anger",
+  "steering_strengths": [-0.4, 0.0, 0.4, 0.8],
+  "steering_prompt": "A teammate missed a deadline and delayed the project. Write a short message to them about it.",
+  "emotions_dir": "data/emotions",
+  "scenarios_path": "data/scenarios/phase1.jsonl",
+  "output_root": "results",
+  "trust_remote_code": false,
+  "question": "Can contrastive first-person sentences yield linear directions and probes for emotion-like states in the residual stream?",
+  "notes": "Fits mean-difference directions and logistic probes, scores the bundled scenario prompts, and writes a qualitative anger-steering demo. Probe accuracy on this set is a pipeline check, not a finding."
+}

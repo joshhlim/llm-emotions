@@ -1,0 +1,9 @@
+{
+  "experiment": "phase04_steering",
+  "status": "stub",
+  "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "seed": 0,
+  "question": "Can steering an emotion direction up or down change task performance, compared with prompt-only emotional framing?",
+  "notes": "Not implemented. Phase 01 steering is a qualitative demo on one message-writing prompt. This phase would sweep strength on the phase-03 tasks. The runner must exit without writing results.",
+  "output_root": "results"
+}

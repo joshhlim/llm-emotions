@@ -1,0 +1,9 @@
+{
+  "experiment": "phase03_performance",
+  "status": "stub",
+  "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "seed": 0,
+  "question": "Does emotional framing change accuracy on a reasoning task, for example a GSM8K subset?",
+  "notes": "Not implemented. No GSM8K items are vendored here and no accuracy numbers exist. The runner must exit without writing results.",
+  "output_root": "results"
+}

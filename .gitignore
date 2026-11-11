@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Hugging Face and model caches. Checkpoints are downloaded at run time.
+.cache/
+hf_cache/
+huggingface/
+.huggingface/
+models/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.gguf
+*.onnx
+
+# Experiment outputs. Regenerate with `llm-emotions run`. Do not commit them as results.
+results/
+outputs/
+wandb/
+mlruns/
+
+# OS and local env
+.DS_Store
+.env
+*.log
