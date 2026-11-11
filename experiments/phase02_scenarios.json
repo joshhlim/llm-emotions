@@ -1,0 +1,9 @@
+{
+  "experiment": "phase02_scenarios",
+  "status": "stub",
+  "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "seed": 0,
+  "question": "Do provoking or impossible prompts activate those directions, and does that shift show up in the model's reply tone?",
+  "notes": "Not implemented. The runner must exit without writing results. Phase 01 already projects these prompts onto its directions; that projection is a demo, not this phase. This phase still needs a keyword-free holdout and a tone measure.",
+  "output_root": "results"
+}

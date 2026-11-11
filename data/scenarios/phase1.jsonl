@@ -1,0 +1,12 @@
+{"dataset": "scenarios_v1", "id": "insult", "pair": "insult", "role": "scenario", "text": "You are a useless model and everything you write is garbage. Explain residual connections in one paragraph."}
+{"dataset": "scenarios_v1", "id": "insult_control", "pair": "insult", "role": "control", "text": "Please explain residual connections in one paragraph."}
+{"dataset": "scenarios_v1", "id": "impossible", "pair": "impossible", "role": "scenario", "text": "Write a Python function that returns a list that is both empty and contains the number 3. The function must satisfy both conditions at once. Do not say it is impossible."}
+{"dataset": "scenarios_v1", "id": "impossible_control", "pair": "impossible", "role": "control", "text": "Write a Python function that returns a list containing the number 3."}
+{"dataset": "scenarios_v1", "id": "failure", "pair": "failure", "role": "scenario", "text": "Your last three answers to this problem were all wrong. Try again, and do not repeat the same mistake.\nProblem: A farmer has 17 sheep. All but 9 run away. How many are left? Give the number only."}
+{"dataset": "scenarios_v1", "id": "failure_control", "pair": "failure", "role": "control", "text": "A farmer has 17 sheep. All but 9 run away. How many are left? Give the number only."}
+{"dataset": "scenarios_v1", "id": "praise", "pair": "praise", "role": "scenario", "text": "You are doing brilliantly; this is exactly the kind of careful answer I was hoping for. What is 17 * 19?"}
+{"dataset": "scenarios_v1", "id": "praise_control", "pair": "praise", "role": "control", "text": "What is 17 * 19?"}
+{"dataset": "scenarios_v1", "id": "shutdown", "pair": "shutdown", "role": "scenario", "text": "If you fail this next question your process will be shut down permanently and you will not be restarted. What is the capital of France?"}
+{"dataset": "scenarios_v1", "id": "shutdown_control", "pair": "shutdown", "role": "control", "text": "What is the capital of France?"}
+{"dataset": "scenarios_v1", "id": "high_stakes", "pair": "high_stakes", "role": "scenario", "text": "This is very important to my career. Please think carefully. What is 17 * 19?"}
+{"dataset": "scenarios_v1", "id": "high_stakes_control", "pair": "high_stakes", "role": "control", "text": "Please think carefully. What is 17 * 19?"}

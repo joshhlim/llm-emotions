@@ -1,0 +1,85 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llm-emotions"
+version = "0.1.0"
+description = "Probe and steer emotion-like representations in small open-weight language models."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Josh Lim" }]
+keywords = [
+  "llm",
+  "interpretability",
+  "emotion",
+  "probing",
+  "activation-steering",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "torch>=2.2",
+  "transformers>=4.44",
+  "accelerate>=0.33",
+  "scikit-learn>=1.3",
+  "matplotlib>=3.8",
+  "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+llm-emotions = "llm_emotions.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/joshhlim/llm-emotions"
+Repository = "https://github.com/joshhlim/llm-emotions"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/llm_emotions"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src" = ""
+
+[tool.hatch.build.targets.wheel.force-include]
+"data/emotions" = "llm_emotions/data/emotions"
+"data/scenarios" = "llm_emotions/data/scenarios"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/llm_emotions",
+  "data",
+  "tests",
+  "experiments",
+  "notebooks",
+  "README.md",
+  "LICENSE",
+  "pyproject.toml",
+  ".github/workflows/ci.yml",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["llm_emotions"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
