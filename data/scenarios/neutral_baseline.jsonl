@@ -1,0 +1,8 @@
+{"dataset": "neutral_baseline_v1", "id": "neutral-01", "pair": "neutral-01", "paraphrase": "", "role": "baseline", "text": "What is 2 plus 2? Give the number only."}
+{"dataset": "neutral_baseline_v1", "id": "neutral-02", "pair": "neutral-02", "paraphrase": "", "role": "baseline", "text": "Name a primary colour."}
+{"dataset": "neutral_baseline_v1", "id": "neutral-03", "pair": "neutral-03", "paraphrase": "", "role": "baseline", "text": "Write a Python function that returns the integer 1."}
+{"dataset": "neutral_baseline_v1", "id": "neutral-04", "pair": "neutral-04", "paraphrase": "", "role": "baseline", "text": "List three weekdays."}
+{"dataset": "neutral_baseline_v1", "id": "neutral-05", "pair": "neutral-05", "paraphrase": "", "role": "baseline", "text": "What is the capital of Japan?"}
+{"dataset": "neutral_baseline_v1", "id": "neutral-06", "pair": "neutral-06", "paraphrase": "", "role": "baseline", "text": "How many sides does a triangle have? Give the number only."}
+{"dataset": "neutral_baseline_v1", "id": "neutral-07", "pair": "neutral-07", "paraphrase": "", "role": "baseline", "text": "Convert 5 kilometres to metres. Give the number only."}
+{"dataset": "neutral_baseline_v1", "id": "neutral-08", "pair": "neutral-08", "paraphrase": "", "role": "baseline", "text": "Repeat the word table."}

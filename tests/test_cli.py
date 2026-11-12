@@ -121,7 +121,31 @@ def test_cli_stub_exits_without_results(tmp_path, capsys):
     assert not (tmp_path / "results").exists()
 
 
-def test_gitignore_keeps_caches_and_results_out_of_git():
+def test_gitignore_keeps_caches_and_generated_results_out_of_git():
     text = Path(".gitignore").read_text(encoding="utf-8")
-    for entry in ("results/", ".cache/", ".venv/", "*.safetensors", ".ipynb_checkpoints/"):
+    for entry in (
+        "results/**",
+        "!results/phase01_directions/Qwen_Qwen2.5-1.5B-Instruct/**",
+        ".cache/",
+        ".venv/",
+        "*.safetensors",
+        ".ipynb_checkpoints/",
+    ):
         assert entry in text
+    import subprocess
+
+    ignored = subprocess.run(
+        ["git", "check-ignore", "-q", "results/phase02_scenarios/example.json"],
+        check=False,
+    )
+    kept = subprocess.run(
+        [
+            "git",
+            "check-ignore",
+            "-q",
+            "results/phase01_directions/Qwen_Qwen2.5-1.5B-Instruct/metrics.json",
+        ],
+        check=False,
+    )
+    assert ignored.returncode == 0
+    assert kept.returncode == 1

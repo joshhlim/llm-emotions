@@ -16,7 +16,6 @@ from llm_emotions.phases import (
 )
 
 _STUB_RUNNERS = {
-    "phase02_scenarios": run_phase02_scenarios,
     "phase03_performance": run_phase03_performance,
     "phase04_steering": run_phase04_steering,
 }
@@ -82,6 +81,9 @@ def _dispatch(config: ExperimentConfig, *, do_steering: bool) -> None:
     if config.experiment == "phase01_directions":
         run_phase01(config, do_steering=do_steering)
         return
+    if config.experiment == "phase02_scenarios":
+        run_phase02_scenarios(config)
+        return
     runner = _STUB_RUNNERS.get(config.experiment)
     if runner is not None:
         runner(config)
@@ -107,6 +109,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"layers: {config.layers if config.layers is not None else 'all'}")
         print(f"batch_size: {config.batch_size}")
         print(f"max_new_tokens: {config.max_new_tokens}")
+        print(f"n_null: {config.n_null}")
         print(f"output_dir: {config.output_dir()}")
         return 0
     try:

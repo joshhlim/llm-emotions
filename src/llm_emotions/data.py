@@ -19,7 +19,7 @@ EMOTION_ORDER: tuple[str, ...] = (
     "shame",
 )
 
-_SCENARIO_ROLES = {"scenario", "control"}
+_SCENARIO_ROLES = {"scenario", "control", "baseline"}
 
 
 @dataclass(frozen=True)
@@ -38,6 +38,7 @@ class Scenario:
     role: str
     text: str
     dataset: str = "unspecified"
+    paraphrase: str = ""
 
 
 def data_root() -> Path:
@@ -80,6 +81,24 @@ def resolve_scenarios_path(path: str | Path | None) -> Path:
     if path:
         return Path(path)
     return data_root() / "scenarios" / "phase1.jsonl"
+
+
+def resolve_keyword_free_dir(path: str | Path | None) -> Path:
+    if path:
+        return Path(path)
+    return data_root() / "emotions_keyword_free"
+
+
+def resolve_phase2_scenarios_path(path: str | Path | None) -> Path:
+    if path:
+        return Path(path)
+    return data_root() / "scenarios" / "phase2.jsonl"
+
+
+def resolve_neutral_prompts_path(path: str | Path | None) -> Path:
+    if path:
+        return Path(path)
+    return data_root() / "scenarios" / "neutral_baseline.jsonl"
 
 
 def _read_jsonl(path: Path) -> list[tuple[int, dict[str, object]]]:
@@ -161,52 +180,103 @@ def load_contrastive_pairs(
     return loaded
 
 
+def _paraphrase(path: Path, lineno: int, row: dict[str, object]) -> str:
+    if "paraphrase" not in row:
+        return ""
+    value = row["paraphrase"]
+    if isinstance(value, int) and not isinstance(value, bool):
+        return str(value)
+    if isinstance(value, str):
+        return value.strip()
+    raise ValueError(f"{path}:{lineno}: paraphrase must be a string or an integer.")
+
+
 def load_scenarios(path: str | Path | None = None) -> list[Scenario]:
-    """Load scenario prompts. Each ``pair`` should have one scenario and one control."""
+    """Load scenario prompts.
+
+    Phase 01 has one scenario and one control per ``pair``. Phase 02 adds a
+    ``paraphrase`` id so a situation can have several matched pairs, and a
+    ``baseline`` role for neutral prompts that are not paired. A baseline does
+    not need a control. A scenario still does. ``path`` defaults to the phase-01
+    file; phase 02 passes its own path.
+    """
     scenario_path = resolve_scenarios_path(path)
     scenarios: list[Scenario] = []
     seen_ids: set[str] = set()
-    seen_roles: set[tuple[str, str]] = set()
+    seen_roles: set[tuple[str, str, str]] = set()
     for lineno, row in _read_jsonl(scenario_path):
         scenario_id = _require_str(scenario_path, lineno, row, "id")
         pair = _require_str(scenario_path, lineno, row, "pair")
         role = _require_str(scenario_path, lineno, row, "role")
         text = _require_str(scenario_path, lineno, row, "text")
+        paraphrase = _paraphrase(scenario_path, lineno, row)
         if role not in _SCENARIO_ROLES:
             raise ValueError(
                 f"{scenario_path}:{lineno}: role must be one of {sorted(_SCENARIO_ROLES)}."
             )
         if scenario_id in seen_ids:
             raise ValueError(f"{scenario_path}:{lineno}: duplicate id {scenario_id!r}.")
-        role_key = (pair, role)
+        role_key = (pair, role, paraphrase)
         if role_key in seen_roles:
             raise ValueError(
-                f"{scenario_path}:{lineno}: pair {pair!r} already has a {role} record."
+                f"{scenario_path}:{lineno}: pair {pair!r} paraphrase {paraphrase!r} "
+                f"already has a {role} record."
             )
         seen_ids.add(scenario_id)
         seen_roles.add(role_key)
         dataset = row.get("dataset", "unspecified")
         if not isinstance(dataset, str) or not dataset:
             raise ValueError(f"{scenario_path}:{lineno}: dataset must be a non-empty string.")
-        scenarios.append(Scenario(id=scenario_id, pair=pair, role=role, text=text, dataset=dataset))
+        scenarios.append(
+            Scenario(
+                id=scenario_id,
+                pair=pair,
+                role=role,
+                text=text,
+                dataset=dataset,
+                paraphrase=paraphrase,
+            )
+        )
     return scenarios
 
 
 def iter_scenario_controls(scenarios: list[Scenario]) -> list[tuple[Scenario, Scenario]]:
-    """Return ``(scenario, control)`` pairs in file order."""
-    grouped: dict[str, dict[str, Scenario]] = {}
-    order: list[str] = []
+    """Return ``(scenario, control)`` pairs in file order.
+
+    Records are grouped by ``(pair, paraphrase)``. Baseline prompts are skipped.
+    Each group must contain one scenario and one control, and the two texts
+    must differ.
+    """
+    grouped: dict[tuple[str, str], dict[str, Scenario]] = {}
+    order: list[tuple[str, str]] = []
     for scenario in scenarios:
-        if scenario.pair not in grouped:
-            order.append(scenario.pair)
-            grouped[scenario.pair] = {}
-        grouped[scenario.pair][scenario.role] = scenario
+        if scenario.role == "baseline":
+            continue
+        key = (scenario.pair, scenario.paraphrase)
+        if key not in grouped:
+            order.append(key)
+            grouped[key] = {}
+        if scenario.role in grouped[key]:
+            raise ValueError(
+                f"Scenario pair {scenario.pair!r} paraphrase {scenario.paraphrase!r} "
+                f"has two {scenario.role} records."
+            )
+        grouped[key][scenario.role] = scenario
     pairs: list[tuple[Scenario, Scenario]] = []
-    for pair in order:
-        roles = grouped[pair]
+    for pair, paraphrase in order:
+        roles = grouped[(pair, paraphrase)]
         if "scenario" not in roles or "control" not in roles:
-            raise ValueError(f"Scenario pair {pair!r} needs both a scenario and a control.")
-        pairs.append((roles["scenario"], roles["control"]))
+            raise ValueError(
+                f"Scenario pair {pair!r} paraphrase {paraphrase!r} needs both a "
+                "scenario and a control."
+            )
+        treated, control = roles["scenario"], roles["control"]
+        if treated.text == control.text:
+            raise ValueError(
+                f"Scenario pair {pair!r} paraphrase {paraphrase!r} uses the same "
+                "text for the scenario and the control."
+            )
+        pairs.append((treated, control))
     return pairs
 
 
