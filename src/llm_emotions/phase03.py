@@ -50,7 +50,17 @@ from llm_emotions.tone import tone_markers
 
 logger = logging.getLogger("llm_emotions")
 
-_OUTCOMES = ["correct", "n_words", "apology", "politeness", "hedge", "refusal"]
+# Insult to anger is the phase-02 cell that kept its sign on 1.5B and 3B.
+PRIMARY_DIRECTION = "anger"
+_OUTCOMES = [
+    "prompt_anger",
+    "correct",
+    "n_words",
+    "apology",
+    "politeness",
+    "hedge",
+    "refusal",
+]
 _BINARY = {"correct", "apology", "politeness", "hedge", "refusal"}
 _PREDICTORS = ["prompt_anger", "reply_anger"]
 
@@ -506,6 +516,23 @@ def run_phase03(
         "paired": [row for part in summaries for row in part["paired"]],
         "associations": [row for part in summaries for row in part["associations"]],
     }
+    for row in (*summary["by_framing"], *summary["paired"], *summary["associations"]):
+        row["role"] = "primary"
+    exploratory_names = [
+        f"prompt_{emotion}" for emotion in fitted.emotions if emotion != PRIMARY_DIRECTION
+    ]
+    exploratory = summarise_outcomes(
+        rows,
+        outcomes=exploratory_names,
+        binary_outcomes=set(),
+        predictors=[],
+        neutral="neutral",
+        rng=rng,
+        n_boot=config.n_boot,
+        kind="all",
+    )
+    for row in (*exploratory["by_framing"], *exploratory["paired"]):
+        row["role"] = "exploratory"
     plot_summary = {
         "by_framing": [row for row in summary["by_framing"] if row["kind"] == "all"],
         "paired": [row for row in summary["paired"] if row["kind"] == "all"],
@@ -561,9 +588,19 @@ def run_phase03(
         "direction_model_id": fitted.model_id,
         "direction_emotions": list(fitted.emotions),
         "direction_set": "keyword_free_cleaned",
+        "primary_direction": PRIMARY_DIRECTION,
+        "primary_reason": (
+            "Insult to anger kept a positive sign on the keyword-free directions "
+            "in both the 1.5B and 3B phase-02 runs. The other emotion directions "
+            "did not, so they are exploratory."
+        ),
+        "exploratory_directions": [
+            emotion for emotion in fitted.emotions if emotion != PRIMARY_DIRECTION
+        ],
         "by_framing": summary["by_framing"],
         "paired_vs_neutral": summary["paired"],
         "associations": summary["associations"],
+        "exploratory_paired": exploratory["paired"],
         "data": {
             "tasks_path": str(tasks_path),
             "framings_path": str(framings_path),
@@ -581,6 +618,7 @@ def run_phase03(
                 effect_rows=summary["paired"],
                 framing_rows=summary["by_framing"],
                 association_rows=summary["associations"],
+                exploratory_rows=exploratory["paired"],
                 examples=_examples(rows),
                 figures=figures,
             )

@@ -34,8 +34,8 @@ PHASES: dict[str, dict[str, str]] = {
         "notebook": "notebooks/03_performance.ipynb",
         "question": (
             "Do phase-02 scenario framings change accuracy and reply tone on checkable "
-            "tasks, and does the anger projection predict either once the framing label "
-            "is accounted for?"
+            "tasks, and does the pre-registered anger projection predict either once "
+            "the framing label is accounted for?"
         ),
         "status": "implemented",
     },

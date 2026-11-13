@@ -318,6 +318,7 @@ def save_phase03(
     effect_rows: list[dict[str, Any]],
     framing_rows: list[dict[str, Any]],
     association_rows: list[dict[str, Any]],
+    exploratory_rows: list[dict[str, Any]],
     examples: list[dict[str, Any]],
     figures: dict[str, Figure],
 ) -> Path:
@@ -338,6 +339,8 @@ def save_phase03(
     write_records(output_dir / "framing_means.csv", framing_rows)
     write_records(output_dir / "framing_effects.csv", effect_rows)
     write_records(output_dir / "associations.csv", association_rows)
+    if exploratory_rows:
+        write_records(output_dir / "exploratory_effects.csv", exploratory_rows)
     (output_dir / "examples.json").write_text(
         json.dumps(
             {

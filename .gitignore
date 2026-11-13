@@ -39,6 +39,11 @@ results/**
 !results/phase02_scenarios/
 !results/phase02_scenarios/Qwen_Qwen2.5-1.5B-Instruct/
 !results/phase02_scenarios/Qwen_Qwen2.5-1.5B-Instruct/**
+!results/phase02_scenarios/Qwen_Qwen2.5-3B-Instruct/
+!results/phase02_scenarios/Qwen_Qwen2.5-3B-Instruct/**
+# The 3B snapshot omits directions.npz on purpose. A local refit should not
+# be committed over that decision.
+results/phase02_scenarios/Qwen_Qwen2.5-3B-Instruct/directions.npz
 outputs/
 wandb/
 mlruns/

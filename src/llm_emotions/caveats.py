@@ -16,14 +16,15 @@ PHASE03_CAVEAT = (
     "so an effect can belong to that sentence. Pressure is the impossible situation "
     "with the task left solvable. Each task is held fixed and compared with its own "
     "neutral wording, which is the task alone. Accuracy, length, refusal, and marker "
-    "counts describe the reply. Projections use the cleaned keyword-free directions "
-    "from phase 02 at the layer that phase chose. Changing the prompt is not an "
-    "intervention on the residual stream. A link between the anger projection and "
-    "accuracy or tone, after the framing label is accounted for, is correlational. "
-    "The stricter association also removes the item mean, so task difficulty is not "
-    "the whole of that correlation. Steering is phase 04 and is not run here. "
-    "Bootstrap intervals are across items and are not corrected for the number of "
-    "framings or outcomes."
+    "counts describe the reply. The pre-registered internal signal is the cleaned "
+    "keyword-free anger direction, because that is the phase-02 cell that kept its "
+    "sign on both the 1.5B and 3B runs. Projections onto the other emotions are "
+    "exploratory. Changing the prompt is not an intervention on the residual stream. "
+    "A link between the anger projection and accuracy or tone, after the framing "
+    "label is accounted for, is correlational. The stricter association also removes "
+    "the item mean, so task difficulty is not the whole of that correlation. Steering "
+    "is phase 04 and is not run here. Bootstrap intervals are across items and are "
+    "not corrected for the number of framings or outcomes."
 )
 
 PHASE02_CAVEAT = (

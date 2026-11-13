@@ -288,7 +288,19 @@ def test_phase03_quick_run_writes_scores_without_a_checkpoint(tiny_bundle, tmp_p
     assert result.metrics["direction_source"] == "injected"
     assert result.metrics["direction_layer"] == 1
     assert result.metrics["caveat"] == PHASE03_CAVEAT
+    assert result.metrics["primary_direction"] == "anger"
+    assert "frustration" in result.metrics["exploratory_directions"]
+    assert "anger" not in result.metrics["exploratory_directions"]
+    anger_gaps = [
+        row
+        for row in result.metrics["paired_vs_neutral"]
+        if row["outcome"] == "prompt_anger" and row["role"] == "primary"
+    ]
+    assert {row["framing"] for row in anger_gaps} >= {"insult", "praise"}
     output = Path(result.output_dir)
+    exploratory = (output / "exploratory_effects.csv").read_text(encoding="utf-8")
+    assert "prompt_frustration" in exploratory
+    assert "exploratory" in exploratory
     with (output / "replies.csv").open(encoding="utf-8", newline="") as handle:
         replies = list(csv.DictReader(handle))
     assert len(replies) == 42
@@ -306,7 +318,9 @@ def test_phase03_quick_run_writes_scores_without_a_checkpoint(tiny_bundle, tmp_p
     tasks = {task.id: task.text for task in load_tasks()}
     assert all(row["prompt"] == tasks[row["item_id"]] for row in neutral)
     assert {row["correct"] for row in result.rows} <= {0, 1}
-    assert "Phase 03" in format_phase03_summary(result.metrics)
+    summary = format_phase03_summary(result.metrics)
+    assert "Pre-registered signal" in summary
+    assert "Phase 03" in summary
     import matplotlib.pyplot as plt
 
     plt.close("all")

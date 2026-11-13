@@ -87,8 +87,21 @@ def format_phase03_summary(metrics: dict) -> str:
             f"{metrics['n_items']} items, {metrics['n_replies']} replies, "
             f"layer {metrics['direction_layer']}, directions from {metrics['direction_source']}."
         ),
-        "Accuracy by framing (95% bootstrap interval across items):",
+        (
+            "Pre-registered signal: the prompt projection on "
+            f"{metrics.get('primary_direction', 'anger')}. "
+            "Other emotion directions are exploratory."
+        ),
+        "Anger projection minus the neutral wording of the same item:",
     ]
+    for row in metrics["paired_vs_neutral"]:
+        if row["kind"] != "all" or row["outcome"] != "prompt_anger":
+            continue
+        lines.append(
+            f"  {row['framing']:12s} {row['mean_delta']:+.3f}  "
+            f"[{row['ci_low']:.3f}, {row['ci_high']:.3f}]"
+        )
+    lines.append("Accuracy by framing (95% bootstrap interval across items):")
     for row in metrics["by_framing"]:
         if row["kind"] != "all" or row["outcome"] != "correct":
             continue

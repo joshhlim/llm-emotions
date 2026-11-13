@@ -155,6 +155,8 @@ def test_gitignore_keeps_caches_and_generated_results_out_of_git():
         "results/**",
         "!results/phase01_directions/Qwen_Qwen2.5-1.5B-Instruct/**",
         "!results/phase02_scenarios/Qwen_Qwen2.5-1.5B-Instruct/**",
+        "!results/phase02_scenarios/Qwen_Qwen2.5-3B-Instruct/**",
+        "results/phase02_scenarios/Qwen_Qwen2.5-3B-Instruct/directions.npz",
         ".cache/",
         ".venv/",
         "*.safetensors",
@@ -185,6 +187,26 @@ def test_gitignore_keeps_caches_and_generated_results_out_of_git():
         ],
         check=False,
     )
+    kept_phase02_3b = subprocess.run(
+        [
+            "git",
+            "check-ignore",
+            "-q",
+            "results/phase02_scenarios/Qwen_Qwen2.5-3B-Instruct/metrics.json",
+        ],
+        check=False,
+    )
+    ignored_npz = subprocess.run(
+        [
+            "git",
+            "check-ignore",
+            "-q",
+            "results/phase02_scenarios/Qwen_Qwen2.5-3B-Instruct/directions.npz",
+        ],
+        check=False,
+    )
     assert ignored.returncode == 0
     assert kept.returncode == 1
     assert kept_phase02.returncode == 1
+    assert kept_phase02_3b.returncode == 1
+    assert ignored_npz.returncode == 0

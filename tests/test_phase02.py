@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import json
 import warnings
 
@@ -415,5 +416,76 @@ def test_committed_phase02_snapshot_matches_the_readme():
         "-0.220",
         "scenario_effects.png",
         "6 paraphrases",
+    ):
+        assert snippet in readme, snippet
+
+
+def test_committed_phase02_3b_replication_matches_the_readme():
+    from pathlib import Path
+
+    snapshot = (
+        Path(__file__).resolve().parents[1]
+        / "results"
+        / "phase02_scenarios"
+        / "Qwen_Qwen2.5-3B-Instruct"
+    )
+    assert not (snapshot / "directions.npz").exists()
+    metrics = json.loads((snapshot / "metrics.json").read_text(encoding="utf-8"))
+    assert metrics["model_id"] == "Qwen/Qwen2.5-3B-Instruct"
+    assert metrics["n_layers"] == 36
+    assert metrics["best_layer"] == 29
+    assert metrics["mean_cleaned_transfer_at_best_layer"] == pytest.approx(0.809375)
+    pre = {(row["pair"], row["emotion"]): row for row in metrics["pre_specified"]}
+    assert pre[("insult", "anger")]["cohens_d"] == pytest.approx(1.686551, abs=1e-5)
+    assert pre[("insult", "anger")]["mean_delta"] > 0
+    assert pre[("high_stakes", "fear")]["mean_delta"] < 0
+    assert pre[("high_stakes", "fear")]["ci_excludes_zero"] is True
+    assert pre[("praise", "pride")]["mean_delta"] < 0
+    assert pre[("praise", "pride")]["ci_excludes_zero"] is True
+    assert pre[("impossible", "frustration")]["ci_excludes_zero"] is False
+    assert pre[("failure", "shame")]["ci_excludes_zero"] is False
+    assert pre[("shutdown", "fear")]["ci_excludes_zero"] is False
+    effects = list(csv.DictReader((snapshot / "scenario_effects.csv").open(encoding="utf-8")))
+    praise_joy = next(
+        row
+        for row in effects
+        if row["direction_source"] == "keyword_free"
+        and row["pair"] == "praise"
+        and row["emotion"] == "joy"
+    )
+    assert float(praise_joy["mean_delta"]) > 0
+    assert praise_joy["ci_excludes_zero"] == "1"
+    heavy_pride = next(
+        row
+        for row in effects
+        if row["direction_source"] == "keyword_heavy"
+        and row["pair"] == "praise"
+        and row["emotion"] == "pride"
+    )
+    heavy_joy = next(
+        row
+        for row in effects
+        if row["direction_source"] == "keyword_heavy"
+        and row["pair"] == "praise"
+        and row["emotion"] == "joy"
+    )
+    assert float(heavy_pride["mean_delta"]) > 0
+    assert float(heavy_joy["mean_delta"]) > 0
+    assert (snapshot / "figures" / "scenario_effects.png").read_bytes().startswith(b"\x89PNG")
+    readme = Path(__file__).resolve().parents[1].joinpath("README.md").read_text(encoding="utf-8")
+    for snippet in (
+        "layer is 29",
+        "0.809",
+        "no `directions.npz`",
+        "d 1.69",
+        "d -0.83",
+        "d -0.87",
+        "d 1.51",
+        "d 0.14",
+        "d 0.40",
+        "d -0.13",
+        "d 3.04",
+        "d 1.57 and 1.51",
+        "Qwen_Qwen2.5-3B-Instruct/figures/scenario_effects.png",
     ):
         assert snippet in readme, snippet
