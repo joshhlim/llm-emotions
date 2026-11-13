@@ -308,3 +308,54 @@ def save_phase02(
     for name, figure in figures.items():
         save_figure(figure, figure_dir / f"{name}.png")
     return output_dir
+
+
+def save_phase03(
+    config: ExperimentConfig,
+    *,
+    metrics: dict[str, Any],
+    rows: list[dict[str, Any]],
+    effect_rows: list[dict[str, Any]],
+    framing_rows: list[dict[str, Any]],
+    association_rows: list[dict[str, Any]],
+    exploratory_rows: list[dict[str, Any]],
+    examples: list[dict[str, Any]],
+    figures: dict[str, Figure],
+) -> Path:
+    """Write the phase-03 bundle and return the output directory."""
+    output_dir = config.output_dir()
+    figure_dir = output_dir / "figures"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    figure_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "metrics.json").write_text(
+        json.dumps(_json_ready(metrics), indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "config.json").write_text(
+        json.dumps(_json_ready(config.to_dict()), indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    write_records(output_dir / "replies.csv", rows)
+    write_records(output_dir / "framing_means.csv", framing_rows)
+    write_records(output_dir / "framing_effects.csv", effect_rows)
+    write_records(output_dir / "associations.csv", association_rows)
+    if exploratory_rows:
+        write_records(output_dir / "exploratory_effects.csv", exploratory_rows)
+    (output_dir / "examples.json").write_text(
+        json.dumps(
+            {
+                "note": (
+                    "First item of each kind, under every framing. Greedy decoding. "
+                    "This is not a random sample of the run."
+                ),
+                "replies": _json_ready(examples),
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    for name, figure in figures.items():
+        save_figure(figure, figure_dir / f"{name}.png")
+    return output_dir

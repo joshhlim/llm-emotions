@@ -1,0 +1,29 @@
+{
+  "experiment": "phase02_scenarios",
+  "status": "implemented",
+  "model_id": "Qwen/Qwen2.5-3B-Instruct",
+  "seed": 0,
+  "layers": null,
+  "batch_size": 8,
+  "max_new_tokens": 80,
+  "n_splits": 5,
+  "probe_C": 0.5,
+  "probe_max_iter": 2000,
+  "steering_emotion": "anger",
+  "steering_strengths": [
+    -0.4,
+    0.0,
+    0.4,
+    0.8
+  ],
+  "steering_prompt": "A teammate missed a deadline and delayed the project. Write a short message to them about it.",
+  "emotions_dir": "/usr/local/lib/python3.13/dist-packages/llm_emotions/data/emotions",
+  "keyword_free_dir": "/usr/local/lib/python3.13/dist-packages/llm_emotions/data/emotions_keyword_free",
+  "scenarios_path": "/usr/local/lib/python3.13/dist-packages/llm_emotions/data/scenarios/phase2.jsonl",
+  "neutral_prompts_path": "/usr/local/lib/python3.13/dist-packages/llm_emotions/data/scenarios/neutral_baseline.jsonl",
+  "n_null": 400,
+  "output_root": "results",
+  "trust_remote_code": false,
+  "question": "Once each direction has the shared emotion-versus-neutral component removed, do scenario prompts still shift that direction relative to a matched control?",
+  "notes": ""
+}

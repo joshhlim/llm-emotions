@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from llm_emotions.caveats import PHASE02_CAVEAT, PROBE_CAVEAT
+from llm_emotions.caveats import PHASE02_CAVEAT, PHASE03_CAVEAT, PROBE_CAVEAT
 from llm_emotions.phases import PHASES
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -66,8 +66,32 @@ def test_phase02_notebook_is_runnable_on_colab():
     assert [cell for cell in notebook["cells"] if cell["cell_type"] == "code"]
 
 
+def test_phase03_notebook_is_runnable_on_colab():
+    notebook = _notebook("03_performance.ipynb")
+    code = _text(notebook, "code")
+    markdown = _text(notebook, "markdown")
+    assert "notebooks/03_performance.ipynb" in markdown
+    assert GITHUB_INSTALL in code
+    assert "google.colab" in code
+    assert "files.download" in code
+    assert "run_phase03" in code
+    assert "llm-emotions run --config experiments/phase03_performance.json" in markdown
+    assert "results/phase03_performance" in markdown
+    assert "EMOTION_QUICK" in markdown
+    for name in (
+        "EMOTION_MODEL_ID",
+        "EMOTION_BATCH_SIZE",
+        "EMOTION_MAX_NEW_TOKENS",
+        "EMOTION_SEED",
+    ):
+        assert name in markdown
+    assert PHASES["phase03_performance"]["question"] in markdown
+    assert PHASE03_CAVEAT in markdown
+    assert [cell for cell in notebook["cells"] if cell["cell_type"] == "code"]
+
+
 def test_later_phases_are_markdown_stubs():
-    for name in ("phase03_performance", "phase04_steering"):
+    for name in ("phase04_steering",):
         phase = PHASES[name]
         notebook = _notebook(Path(phase["notebook"]).name)
         assert [cell for cell in notebook["cells"] if cell["cell_type"] == "code"] == []

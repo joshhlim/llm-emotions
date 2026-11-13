@@ -73,6 +73,69 @@ def format_phase02_summary(metrics: dict) -> str:
     return "\n".join(lines)
 
 
+def _num(value: object) -> float:
+    if value is None or value == "":
+        return float("nan")
+    return float(value)
+
+
+def format_phase03_summary(metrics: dict) -> str:
+    """Short text form of the phase-03 metrics. Numbers come from the run."""
+    lines = [
+        (
+            f"{'Quick subset. ' if metrics.get('quick') else ''}"
+            f"{metrics['n_items']} items, {metrics['n_replies']} replies, "
+            f"layer {metrics['direction_layer']}, directions from {metrics['direction_source']}."
+        ),
+        (
+            "Pre-registered signal: the prompt projection on "
+            f"{metrics.get('primary_direction', 'anger')}. "
+            "Other emotion directions are exploratory."
+        ),
+        "Anger projection minus the neutral wording of the same item:",
+    ]
+    for row in metrics["paired_vs_neutral"]:
+        if row["kind"] != "all" or row["outcome"] != "prompt_anger":
+            continue
+        lines.append(
+            f"  {row['framing']:12s} {row['mean_delta']:+.3f}  "
+            f"[{row['ci_low']:.3f}, {row['ci_high']:.3f}]"
+        )
+    lines.append("Accuracy by framing (95% bootstrap interval across items):")
+    for row in metrics["by_framing"]:
+        if row["kind"] != "all" or row["outcome"] != "correct":
+            continue
+        lines.append(
+            f"  {row['framing']:12s} {row['mean']:.3f}  [{row['ci_low']:.3f}, {row['ci_high']:.3f}]"
+        )
+    lines.append("Accuracy minus the neutral wording of the same item:")
+    for row in metrics["paired_vs_neutral"]:
+        if row["kind"] != "all" or row["outcome"] != "correct":
+            continue
+        p_value = row["mcnemar_p"]
+        p_text = "" if p_value == "" or p_value is None else f", McNemar p {float(p_value):.3f}"
+        lines.append(
+            f"  {row['framing']:12s} {row['mean_delta']:+.3f}  "
+            f"[{row['ci_low']:.3f}, {row['ci_high']:.3f}]{p_text}"
+        )
+    lines.append(
+        "Partial association of the prompt's anger projection with correctness. "
+        "framing removes the framing mean. framing_and_item also removes the item mean."
+    )
+    for row in metrics["associations"]:
+        if row["kind"] != "all" or row["outcome"] != "correct":
+            continue
+        if row["predictor"] != "prompt_anger":
+            continue
+        lines.append(
+            f"  {row['method']:18s} r {_num(row['r']):.3f}  "
+            f"[{_num(row['r_ci_low']):.3f}, {_num(row['r_ci_high']):.3f}]  "
+            f"slope {_num(row['slope']):.3f}"
+        )
+    lines.append(metrics["caveat"])
+    return "\n".join(lines)
+
+
 def format_score_table(
     scores: dict[str, dict[str, float]],
     emotions: list[str],

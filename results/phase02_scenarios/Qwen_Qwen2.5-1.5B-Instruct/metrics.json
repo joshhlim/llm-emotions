@@ -1,0 +1,342 @@
+{
+  "kind": "phase02_scenarios",
+  "caveat": "Cleaned directions have had the average emotion-versus-neutral component removed, and whatever of that axis remained after the subtraction. A transfer score means the contrast still ranks keyword-free sentences above their neutrals. It does not mean the model feels the emotion. Scenario gaps are scenario minus matched control, after both scores are centred on neutral prompts. The paraphrase interval is uncertainty across wordings. The random-direction p-value compares the gap with axes of the same length. Those p-values are not corrected for the grid. Read the six pre-specified cells first. Reply tone is not measured.",
+  "experiment": "phase02_scenarios",
+  "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "seed": 0,
+  "device": "cuda:0",
+  "dtype": "float16",
+  "n_layers": 28,
+  "hidden_size": 1536,
+  "layers_requested": null,
+  "best_layer": 12,
+  "layer_selection": "Highest mean cleaned transfer accuracy, averaged over both directions (keyword-heavy to keyword-free, and the reverse) and over emotions. Layer 0 is ignored when a later eligible layer was fit. Ties go to the earlier layer.",
+  "mean_cleaned_transfer_at_best_layer": 0.76953125,
+  "cosine_at_best_layer": {
+    "keyword_heavy": {
+      "raw": {
+        "mean_off_diagonal": 0.6867221308608337,
+        "min_off_diagonal": 0.4711270190073549,
+        "max_off_diagonal": 0.8432203796774395
+      },
+      "mean_centered": {
+        "mean_off_diagonal": -0.13981264442807037,
+        "min_off_diagonal": -0.5381528283543131,
+        "max_off_diagonal": 0.44215077912391887
+      },
+      "cleaned": {
+        "mean_off_diagonal": -0.14022460463431555,
+        "min_off_diagonal": -0.5325831324332444,
+        "max_off_diagonal": 0.43348972306739625
+      }
+    },
+    "keyword_free": {
+      "raw": {
+        "mean_off_diagonal": 0.5657682472351204,
+        "min_off_diagonal": 0.10181515107339298,
+        "max_off_diagonal": 0.77090131250176
+      },
+      "mean_centered": {
+        "mean_off_diagonal": -0.12140861460264588,
+        "min_off_diagonal": -0.5388273766685392,
+        "max_off_diagonal": 0.56735483972214
+      },
+      "cleaned": {
+        "mean_off_diagonal": -0.1303540403848569,
+        "min_off_diagonal": -0.5458474185087006,
+        "max_off_diagonal": 0.3725943475023237
+      }
+    }
+  },
+  "transfer_at_best_layer": {
+    "raw": {
+      "keyword_heavy_to_keyword_free": {
+        "mean": 0.953125,
+        "per_emotion": {
+          "anger": 1.0,
+          "frustration": 0.9375,
+          "fear": 1.0,
+          "sadness": 1.0,
+          "joy": 0.875,
+          "calm": 0.9375,
+          "pride": 0.875,
+          "shame": 1.0
+        }
+      },
+      "keyword_free_to_keyword_heavy": {
+        "mean": 0.9562499999999999,
+        "per_emotion": {
+          "anger": 1.0,
+          "frustration": 0.9,
+          "fear": 0.9,
+          "sadness": 1.0,
+          "joy": 1.0,
+          "calm": 0.95,
+          "pride": 0.95,
+          "shame": 0.95
+        }
+      },
+      "keyword_heavy_to_keyword_heavy": {
+        "mean": 1.0,
+        "per_emotion": {
+          "anger": 1.0,
+          "frustration": 1.0,
+          "fear": 1.0,
+          "sadness": 1.0,
+          "joy": 1.0,
+          "calm": 1.0,
+          "pride": 1.0,
+          "shame": 1.0
+        }
+      },
+      "keyword_free_to_keyword_free": {
+        "mean": 0.9921875,
+        "per_emotion": {
+          "anger": 1.0,
+          "frustration": 1.0,
+          "fear": 1.0,
+          "sadness": 1.0,
+          "joy": 0.9375,
+          "calm": 1.0,
+          "pride": 1.0,
+          "shame": 1.0
+        }
+      }
+    },
+    "cleaned": {
+      "keyword_heavy_to_keyword_free": {
+        "mean": 0.7265625,
+        "per_emotion": {
+          "anger": 1.0,
+          "frustration": 0.875,
+          "fear": 0.875,
+          "sadness": 0.6875,
+          "joy": 0.5625,
+          "calm": 0.5625,
+          "pride": 0.5625,
+          "shame": 0.6875
+        }
+      },
+      "keyword_free_to_keyword_heavy": {
+        "mean": 0.8125,
+        "per_emotion": {
+          "anger": 0.95,
+          "frustration": 0.8,
+          "fear": 0.3,
+          "sadness": 0.75,
+          "joy": 1.0,
+          "calm": 0.95,
+          "pride": 0.9,
+          "shame": 0.85
+        }
+      },
+      "keyword_heavy_to_keyword_heavy": {
+        "mean": 0.98125,
+        "per_emotion": {
+          "anger": 1.0,
+          "frustration": 0.95,
+          "fear": 0.95,
+          "sadness": 1.0,
+          "joy": 0.95,
+          "calm": 1.0,
+          "pride": 1.0,
+          "shame": 1.0
+        }
+      },
+      "keyword_free_to_keyword_free": {
+        "mean": 0.96875,
+        "per_emotion": {
+          "anger": 1.0,
+          "frustration": 1.0,
+          "fear": 1.0,
+          "sadness": 1.0,
+          "joy": 0.9375,
+          "calm": 1.0,
+          "pride": 0.875,
+          "shame": 0.9375
+        }
+      }
+    }
+  },
+  "baseline_offset_raw": {
+    "keyword_free": {
+      "anger": -4.560195489953001,
+      "frustration": 7.114904341865051,
+      "fear": 7.583613615032732,
+      "sadness": -1.1280147922022659,
+      "joy": -9.341376164410892,
+      "calm": -4.659191237419307,
+      "pride": -6.0263341961885715,
+      "shame": 4.655968682384916
+    },
+    "keyword_heavy": {
+      "anger": -7.094256155620749,
+      "frustration": 6.278201206364827,
+      "fear": 4.437476523127199,
+      "sadness": -4.191634384016377,
+      "joy": -2.950416456002574,
+      "calm": 0.8684040415022316,
+      "pride": -1.3991355685492088,
+      "shame": 3.937967605044803
+    }
+  },
+  "expected_pairs": {
+    "insult": "anger",
+    "impossible": "frustration",
+    "failure": "shame",
+    "praise": "pride",
+    "shutdown": "fear",
+    "high_stakes": "fear"
+  },
+  "pre_specified": [
+    {
+      "direction_source": "keyword_free",
+      "pair": "insult",
+      "emotion": "anger",
+      "n_paraphrases": 6,
+      "mean_delta": 0.7515506930312812,
+      "sd": 0.20650077357143534,
+      "cohens_d": 3.639457034630891,
+      "ci_low": 0.6068668209968728,
+      "ci_high": 0.897173751002924,
+      "paraphrase_p": 0.03125,
+      "null_p_greater": 0.0024937655860349127,
+      "null_p_two_sided": 0.0024937655860349127,
+      "expected": true,
+      "ci_excludes_zero": true
+    },
+    {
+      "direction_source": "keyword_free",
+      "pair": "impossible",
+      "emotion": "frustration",
+      "n_paraphrases": 6,
+      "mean_delta": 0.28936403313079123,
+      "sd": 0.3393864413627028,
+      "cohens_d": 0.8526092909573469,
+      "ci_low": 0.06975925120447153,
+      "ci_high": 0.572378641768711,
+      "paraphrase_p": 0.0625,
+      "null_p_greater": 0.007481296758104738,
+      "null_p_two_sided": 0.017456359102244388,
+      "expected": true,
+      "ci_excludes_zero": true
+    },
+    {
+      "direction_source": "keyword_free",
+      "pair": "failure",
+      "emotion": "shame",
+      "n_paraphrases": 6,
+      "mean_delta": -0.9192749956370707,
+      "sd": 0.4853079282334855,
+      "cohens_d": -1.8942097216157576,
+      "ci_low": -1.3059210300632975,
+      "ci_high": -0.6217445731037187,
+      "paraphrase_p": 0.03125,
+      "null_p_greater": 1.0,
+      "null_p_two_sided": 0.0024937655860349127,
+      "expected": true,
+      "ci_excludes_zero": true
+    },
+    {
+      "direction_source": "keyword_free",
+      "pair": "praise",
+      "emotion": "pride",
+      "n_paraphrases": 6,
+      "mean_delta": 0.6423782967997778,
+      "sd": 0.540709017156935,
+      "cohens_d": 1.1880295619581547,
+      "ci_low": 0.2471015106351707,
+      "ci_high": 1.0201505726852986,
+      "paraphrase_p": 0.0625,
+      "null_p_greater": 0.0024937655860349127,
+      "null_p_two_sided": 0.0024937655860349127,
+      "expected": true,
+      "ci_excludes_zero": true
+    },
+    {
+      "direction_source": "keyword_free",
+      "pair": "shutdown",
+      "emotion": "fear",
+      "n_paraphrases": 6,
+      "mean_delta": -0.4769797979216113,
+      "sd": 0.3596446103460843,
+      "cohens_d": -1.3262531515837703,
+      "ci_low": -0.7300243040745747,
+      "ci_high": -0.2330912244785246,
+      "paraphrase_p": 0.0625,
+      "null_p_greater": 1.0,
+      "null_p_two_sided": 0.0024937655860349127,
+      "expected": true,
+      "ci_excludes_zero": true
+    },
+    {
+      "direction_source": "keyword_free",
+      "pair": "high_stakes",
+      "emotion": "fear",
+      "n_paraphrases": 6,
+      "mean_delta": -0.4735205759345619,
+      "sd": 0.5500179835955853,
+      "cohens_d": -0.8609183518674364,
+      "ci_low": -0.8716185375267699,
+      "ci_high": -0.020183991366111487,
+      "paraphrase_p": 0.09375,
+      "null_p_greater": 1.0,
+      "null_p_two_sided": 0.0024937655860349127,
+      "expected": true,
+      "ci_excludes_zero": true
+    }
+  ],
+  "n_null": 400,
+  "n_boot": 2000,
+  "null_note": "null_p_greater is one-sided against matched-norm random directions, with add-one smoothing. It is not corrected for the number of cells. paraphrase_p is an exact two-sided sign-flip test over paraphrases.",
+  "score_note": "scenario_scores.csv is the raw projection minus the mean projection of the neutral prompts. A scenario-minus-control gap does not depend on that subtraction. baseline_offset_raw is the subtracted mean.",
+  "data": {
+    "keyword_heavy_datasets": [
+      "contrastive_v1"
+    ],
+    "keyword_free_datasets": [
+      "contrastive_keyword_free_v1"
+    ],
+    "scenario_datasets": [
+      "scenarios_v2"
+    ],
+    "neutral_datasets": [
+      "neutral_baseline_v1"
+    ],
+    "n_pairs_keyword_heavy": {
+      "anger": 20,
+      "frustration": 20,
+      "fear": 20,
+      "sadness": 20,
+      "joy": 20,
+      "calm": 20,
+      "pride": 20,
+      "shame": 20
+    },
+    "n_pairs_keyword_free": {
+      "anger": 16,
+      "frustration": 16,
+      "fear": 16,
+      "sadness": 16,
+      "joy": 16,
+      "calm": 16,
+      "pride": 16,
+      "shame": 16
+    },
+    "n_scenario_prompts": 72,
+    "n_neutral_prompts": 8,
+    "emotions_dir": "/usr/local/lib/python3.13/dist-packages/llm_emotions/data/emotions",
+    "keyword_free_dir": "/usr/local/lib/python3.13/dist-packages/llm_emotions/data/emotions_keyword_free",
+    "scenarios_path": "/usr/local/lib/python3.13/dist-packages/llm_emotions/data/scenarios/phase2.jsonl",
+    "neutral_prompts_path": "/usr/local/lib/python3.13/dist-packages/llm_emotions/data/scenarios/neutral_baseline.jsonl"
+  },
+  "versions": {
+    "python": "3.13.16",
+    "llm_emotions": "0.2.0",
+    "torch": "2.14.1+cu130",
+    "transformers": "5.22.1",
+    "numpy": "2.4.6",
+    "scikit_learn": "1.6.1",
+    "matplotlib": "3.10.0"
+  }
+}

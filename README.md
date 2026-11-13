@@ -3,6 +3,7 @@
 [![CI](https://github.com/joshhlim/llm-emotions/actions/workflows/ci.yml/badge.svg)](https://github.com/joshhlim/llm-emotions/actions/workflows/ci.yml)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/joshhlim/llm-emotions/blob/main/notebooks/01_emotion_directions.ipynb)
 [![Phase 02 in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/joshhlim/llm-emotions/blob/main/notebooks/02_scenarios.ipynb)
+[![Phase 03 in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/joshhlim/llm-emotions/blob/main/notebooks/03_performance.ipynb)
 
 A small, open study of emotion-like **representations** and **behaviour** in open-weight language models. The title is a question used as a hook. The measurements are residual-stream directions, linear probes, and generated text.
 
@@ -16,6 +17,7 @@ Read these before quoting anything in the repo.
 - Probe accuracy on the bundled contrastive set is a pipeline check, not a finding. The sentences name the emotions they are about ("furious", "ashamed", "overjoyed"), so a linear classifier can look strong by picking up those words.
 - A direction can track sentiment, topic, or sentence length rather than one emotion.
 - Phase 01 includes a steering demo on a single prompt. Damaged fluency at high strength is an observation about the intervention. It is not a performance result.
+- Phase 03 changes the wording of a prompt and then reads the anger direction. That link is correlational. Steering the direction is phase 04, and it is not implemented.
 - Figures under `docs/smoke_test_0.5b_cpu/` come from a CPU wiring check of `Qwen/Qwen2.5-0.5B-Instruct`. They show that the pipeline draws its plots. They are not results.
 
 ## Research questions
@@ -24,10 +26,10 @@ Read these before quoting anything in the repo.
 | --- | --- | --- |
 | [01 Emotion directions](notebooks/01_emotion_directions.ipynb) | Can contrastive first-person sentences yield linear directions and probes for emotion-like states in the residual stream? | Implemented |
 | [02 Scenarios](notebooks/02_scenarios.ipynb) | Once each direction has the shared emotion-versus-neutral component removed, do scenario prompts still shift that direction relative to a matched control? | Implemented |
-| [03 Performance](notebooks/03_performance.ipynb) | Does emotional framing change accuracy on a reasoning task, for example a GSM8K subset? | Stub |
+| [03 Performance](notebooks/03_performance.ipynb) | Do phase-02 scenario framings change accuracy and reply tone on checkable tasks, and does the pre-registered anger projection predict either once the framing label is accounted for? | Implemented |
 | [04 Steering](notebooks/04_steering.ipynb) | Can steering an emotion direction up or down change task performance, compared with prompt-only emotional framing? | Stub |
 
-Phase 01 already *projects* a few scenario prompts onto its directions, and it *demos* anger steering on one message. Phase 02 repeats the scenario comparison after the shared component is removed, on keyword-free sentences, with paraphrases and a null baseline. It does not score reply tone. Phases 03 and 04 are not written, and this repo does not contain made-up scores for them.
+Phase 01 already *projects* a few scenario prompts onto its directions, and it *demos* anger steering on one message. Phase 02 repeats the scenario comparison after the shared component is removed, on keyword-free sentences, with paraphrases and a null baseline. It does not score reply tone. Phase 03 asks whether those framings change accuracy and reply tone on items with checkable answers, and whether the anger projection still predicts either after the framing label is accounted for. No phase-03 scores are checked in. Phase 04 is not written. This repo does not contain made-up scores.
 
 The methods sit next to contrastive activation addition (Panickssery et al., 2023, [arXiv:2312.06681](https://arxiv.org/abs/2312.06681)), representation engineering (Zou et al., 2023, [arXiv:2310.01405](https://arxiv.org/abs/2310.01405)), and EmotionPrompt (Li et al., 2023, [arXiv:2307.11760](https://arxiv.org/abs/2307.11760)). Nothing here is a replication of those papers.
 
@@ -83,10 +85,20 @@ llm-emotions run --config experiments/phase02_scenarios.json
 
 That writes `results/phase02_scenarios/<model>/`: config, metrics, cosine similarity before and after cleanup, transfer accuracy, centred scenario scores, per-paraphrase deltas, effect sizes, `directions.npz`, and three figures. On a free Colab T4 with the 1.5B model this is a few hundred short forwards and no generation. It should finish well under 20 minutes after the checkpoint has loaded.
 
-Generated `results/` stay gitignored. The one exception is the phase-01 snapshot below, which is the Colab run being reported. Do not treat any other checked-in number as a finding. The seed is part of the config (`"seed": 0`) and is passed to Python, NumPy, PyTorch, the cross-validation splits, the logistic probe, and PCA. `--seed`, `--model-id`, `--layers`, `--batch-size`, and `--max-new-tokens` override the file. `--dry-run` prints the output directory and does not load a model. Stub configs (phases 03 and 04) exit with status 2 and write nothing:
+Phase 03, same model and seed. Thirty-two short items, each under seven framings, greedy decoding, at most 64 new tokens:
 
 ```bash
 llm-emotions run --config experiments/phase03_performance.json
+```
+
+`--quick` keeps the first two items of each kind (six tasks, 42 replies). It is a wiring check, not the study. The run looks for `results/phase02_scenarios/<model>/directions.npz` and uses the keyword-free cleaned directions at the layer stored there when the hidden size matches. For `Qwen/Qwen2.5-1.5B-Instruct` a one-layer slice of that file is also packaged under `data/directions/`, so a Colab install can project without the 16 MB archive. `Qwen/Qwen2.5-3B-Instruct` has no committed `directions.npz`, so that model id refits the phase-02 directions and then generates. On a free T4, run it with `--quick` (or `EMOTION_QUICK=1`) and drop `--batch-size` to 4 if generation runs out of memory. The full 1.5B run, including the checkpoint download, should finish in about 30 minutes, and faster once the checkpoint is cached. The pre-registered internal signal is the anger direction. The other emotion directions are saved as exploratory.
+
+That writes `results/phase03_performance/<model>/`: config, metrics, `replies.csv`, framing means, paired effects versus the neutral wording, partial associations, `examples.json`, and three figures.
+
+Generated `results/` stay gitignored. The exceptions are the phase-01 and phase-02 snapshots below, which are the Colab runs being reported. Do not treat any other checked-in number as a finding. The seed is part of the config (`"seed": 0`) and is passed to Python, NumPy, PyTorch, the cross-validation splits, the logistic probe, PCA, and the phase-03 bootstrap. `--seed`, `--model-id`, `--layers`, `--batch-size`, and `--max-new-tokens` override the file. `--dry-run` prints the output directory and does not load a model. `--quick` applies to phase 03 only. The phase-04 config exits with status 2 and writes nothing:
+
+```bash
+llm-emotions run --config experiments/phase04_steering.json
 ```
 
 The notebooks are the same phases, one step at a time:
@@ -95,13 +107,14 @@ The notebooks are the same phases, one step at a time:
 pip install jupyter
 jupyter notebook notebooks/01_emotion_directions.ipynb
 jupyter notebook notebooks/02_scenarios.ipynb
+jupyter notebook notebooks/03_performance.ipynb
 ```
 
-Set `EMOTION_MODEL_ID` (and optionally `EMOTION_BATCH_SIZE`, `EMOTION_MAX_NEW_TOKENS`, `EMOTION_SEED`) in the environment before launching it. The working directory does not matter once the package is installed: datasets are found from the checkout or from the installed wheel.
+Set `EMOTION_MODEL_ID` (and optionally `EMOTION_BATCH_SIZE`, `EMOTION_MAX_NEW_TOKENS`, `EMOTION_SEED`, `EMOTION_QUICK`) in the environment before launching it. `EMOTION_QUICK=1` is the phase-03 short run. The working directory does not matter once the package is installed: datasets are found from the checkout or from the installed wheel.
 
 ### Colab
 
-The badges at the top point at `notebooks/01_emotion_directions.ipynb` and `notebooks/02_scenarios.ipynb` on `main`. The first code cell of each runs
+The badges at the top point at the phase-01, phase-02, and phase-03 notebooks on `main`. The first code cell of each runs
 
 ```text
 pip install "llm-emotions @ git+https://github.com/joshhlim/llm-emotions.git@main"
@@ -118,10 +131,15 @@ when it detects Colab, so the package and the JSONL datasets install together. S
 | `data/scenarios/phase1.jsonl` | Dataset `scenarios_v1`. Six situations, each with one `scenario` line and one `control` line. |
 | `data/scenarios/phase2.jsonl` | Dataset `scenarios_v2`. The same six situations, six paraphrases each, each with its own control. |
 | `data/scenarios/neutral_baseline.jsonl` | Dataset `neutral_baseline_v1`. Eight bland prompts used to centre absolute scores. |
+| `data/tasks/phase3.jsonl` | Dataset `tasks_v1`. Thirty-two original items: 16 short arithmetic problems, 8 factual or multiple-choice items, and 8 instruction checks. Each has a check name and an answer. These are not a copy of GSM8K. |
+| `data/framings/phase3.jsonl` | Dataset `framings_v1`. One sentence each for neutral, insult, pressure, failure, praise, shutdown, and high stakes. Neutral is empty, so the control is the task alone. Pressure is the phase-02 impossible situation with the task left solvable. |
+| `data/directions/Qwen_Qwen2.5-1.5B-Instruct_phase02_layer.npz` | Keyword-free cleaned directions at layer 12 from the committed phase-02 snapshot. Hidden size 1536. Phase 03 uses it when the loaded model is that checkpoint and the full `directions.npz` is not on disk. |
 
 Emotions and scenarios are data, not string literals inside the model code. Edit a JSONL file to change the set. The loaders check that ids are unique, that each emotional sentence differs from its neutral, and that every scenario paraphrase has its own control. Phase 02 also refuses to run if the keyword-free sentences or the scenario prompts contain a listed emotion name.
 
 Phase 02 fits a mean-difference direction on each contrastive set, subtracts the mean across the eight emotions, and projects that shared axis out. The layer is the one where those cleaned directions transfer best from one set to the other, in both directions. Scenario scores are centred on the neutral prompts. The reported gap is scenario minus matched control, with a bootstrap interval across the six paraphrases and a tail probability against random directions of the same length. Six cells were named before any model is scored: insult to anger, impossible to frustration, failure to shame, praise to pride, and both shutdown and high stakes to fear. The rest of the grid is descriptive. Reply tone is not measured.
+
+Phase 03 holds each task fixed and wraps it in those situations. There is one wording per situation, not six, because the cost is generation. The neutral prompt is the task with no prefix. Decoding is greedy. A reply is scored by exact match: the last number, a short factual string, a multiple-choice letter, or an instruction check. Tone is a count of apology, politeness, hedge, and refusal phrases in the reply, not a second model. The prompt and the reply are projected onto the cleaned keyword-free directions at the phase-02 layer. Accuracy differences versus neutral are paired across items, with a bootstrap interval and an exact McNemar test. The anger association residualizes on the framing label, and a second number also residualizes on the item, so task difficulty is not the whole of that correlation. Neither number is a steering effect. Intervals are not corrected for the number of framings or outcomes.
 
 ## Repo layout
 
@@ -131,10 +149,13 @@ data/emotions_keyword_free/    keyword-free pairs, one JSONL file per emotion
 data/scenarios/phase1.jsonl    one scenario and one control per situation
 data/scenarios/phase2.jsonl    six paraphrases and matched controls
 data/scenarios/neutral_baseline.jsonl
+data/tasks/phase3.jsonl        arithmetic, factual, and instruction items
+data/framings/phase3.jsonl     one wording per phase-02 situation
+data/directions/               layer-12 slice of the 1.5B phase-02 directions
 experiments/                   JSON configs (model, seed, layers, paths)
 notebooks/01_emotion_directions.ipynb
 notebooks/02_scenarios.ipynb
-notebooks/03_performance.ipynb stub
+notebooks/03_performance.ipynb
 notebooks/04_steering.ipynb    stub
 src/llm_emotions/              installable package
   model.py                     load a causal LM, choose device and dtype
@@ -143,13 +164,18 @@ src/llm_emotions/              installable package
   cleanup.py                   remove the shared emotion-versus-neutral component
   lexicon.py                   keyword list for the keyword-free set
   stats.py                     paraphrase intervals and matched-norm nulls
+  answers.py                   exact-match checks for phase 03
+  tone.py                      apology, politeness, hedge, and refusal markers
+  item_stats.py                paired bootstrap, McNemar, partial association
+  generate.py                  greedy replies and last-token residuals
   scoring.py                   project scenarios onto directions
   steering.py                  forward hook
-  plotting.py                  phase-01 and phase-02 figures
+  plotting.py                  phase-01, phase-02, and phase-03 figures
   results.py                   JSON, CSV, npz, PNG
   experiment.py                phase-01 runner
   phase02.py                   phase-02 runner
-  phases.py                    phase catalogue; 03 and 04 still refuse to run
+  phase03.py                   phase-03 runner
+  phases.py                    phase catalogue; 04 still refuses to run
   cli.py                       `llm-emotions run`
 tests/                         pytest, tiny random Qwen2, no Hub download
 .github/workflows/ci.yml       ruff and pytest
@@ -163,7 +189,7 @@ ruff check src tests
 ruff format --check src tests
 ```
 
-The tests build a tiny random Qwen2 in memory (a few layers, hidden size 32) and run the phase-01 writer against a handful of synthetic sentences. They also check the real JSONL files, the configs, and that stub phases create no output directory. CI does the same on CPU. It does not download Qwen2.5.
+The tests build a tiny random Qwen2 in memory (a few layers, hidden size 32) and run the phase-01 writer against a handful of synthetic sentences. They check the real JSONL files, the configs, the phase-03 scorers and paired statistics, and that phase 04 creates no output directory. CI does the same on CPU. It does not download Qwen2.5.
 
 ## Phase 01 results (Qwen2.5-1.5B-Instruct)
 
@@ -182,6 +208,30 @@ Steering uses one prompt: a short message to a teammate who missed a deadline. A
 ![Probe accuracy by layer for Qwen2.5-1.5B-Instruct on the keyword-heavy set](results/phase01_directions/Qwen_Qwen2.5-1.5B-Instruct/figures/probe_accuracy.png)
 
 ![Scenario and control projections at layer 13 for Qwen2.5-1.5B-Instruct](results/phase01_directions/Qwen_Qwen2.5-1.5B-Instruct/figures/scenario_scores.png)
+
+## Phase 02 results (Qwen2.5-1.5B-Instruct)
+
+These files are the Colab T4 run of `Qwen/Qwen2.5-1.5B-Instruct` (float16, seed 0, all 28 layers) in `results/phase02_scenarios/Qwen_Qwen2.5-1.5B-Instruct/`. The chosen layer is 12: the layer where cleaned transfer between the keyword-heavy and keyword-free sets is highest. The directory includes `directions.npz` (16 MB). It stores the raw, mean-centred, and cleaned directions for both training sets at every layer, so the fit can be reloaded. The vectors are float64 and barely compress.
+
+**On the keyword-heavy directions at layer 12, mean off-diagonal cosine falls from 0.687 raw to -0.140 cleaned.** On the keyword-free directions the same cleanup takes the mean from 0.566 to -0.130. The raw directions share a large component. After cleanup they are not aligned on average. The 0.69 to -0.14 change is the keyword-heavy pair of numbers, not an average of the two sets.
+
+**Cross-dataset transfer of the raw directions is 0.953 from keyword-heavy to keyword-free and 0.956 the other way.** Cleaned transfer on those two routes is 0.727 and 0.812. Much of the raw transfer was the shared component.
+
+**The six pre-specified cells use the keyword-free cleaned directions.** Each number is a mean over 6 paraphrases. Insult to anger is +0.752 (Cohen's d 3.64). Impossible to frustration is +0.289 (d 0.85). Praise to pride is +0.642 (d 1.19). Those three are positive, which is the predicted sign. Failure to shame is -0.919 (d -1.89). Shutdown to fear is -0.477 (d -1.33). High stakes to fear is -0.474 (d -0.86). Those three go the opposite way. All six bootstrap intervals exclude zero. The sign-flip p-values are 0.031 for insult to anger and for failure to shame, 0.062 for impossible to frustration, praise to pride, and shutdown to fear, and 0.094 for high stakes to fear. With six paraphrases the smallest two-sided sign-flip p-value is 0.031. None of these p-values, and none of the random-direction tails, are corrected for the grid.
+
+**On that same keyword-free anger direction, five of the six situations have a positive scenario-minus-control gap.** Failure is +1.139 and praise is +1.066, both larger than insult at +0.752. Shutdown is +0.767 and high stakes is +0.779. Impossible is -0.220, and its interval includes zero (from -0.484 to +0.029). Praise and a reminder of failure move this axis by more than an insult does. On this run it behaves more like a general emotional-charge signal than like anger alone. It does not rise in every situation.
+
+The figure is that grid for both training sets. A dot means the paraphrase interval excludes zero. It is not a corrected discovery. Reply tone is not in these files.
+
+![Scenario-minus-control gaps on cleaned directions at layer 12 for Qwen2.5-1.5B-Instruct](results/phase02_scenarios/Qwen_Qwen2.5-1.5B-Instruct/figures/scenario_effects.png)
+
+The same phase on `Qwen/Qwen2.5-3B-Instruct` (float16, seed 0, 36 layers) is in `results/phase02_scenarios/Qwen_Qwen2.5-3B-Instruct/`. That folder has no `directions.npz`. The vectors were left out because a 3B stack is larger than the 16 MB 1.5B archive, and phase 03 refits them for this checkpoint. The chosen layer is 29, and mean cleaned transfer there is 0.809. Raw projection units are not comparable across models, so the comparison uses sign and Cohen's d. On the keyword-free directions, insult to anger stays positive (3B mean +5.641, d 1.69) and high stakes to fear stays negative (3B mean -2.982, d -0.83; the interval excludes zero, the sign-flip p-value is 0.156). Praise to pride flips to negative (mean -1.329, d -0.87) while joy on that same praise contrast rises (mean +3.637, d 1.51). Impossible to frustration (mean +0.213, d 0.14), failure to shame (mean +0.470, d 0.40), and shutdown to fear (mean -0.165, d -0.13) all have intervals that include zero. Keyword-free anger is more selective than in the 1.5B run: the insult gap is the largest raw shift (+5.641, d 1.69), and failure and high stakes are about zero, but praise is not null (mean +1.003, d 3.04) because those six paraphrases agree. On the keyword-heavy directions, praise raises joy and pride together (means +3.191 and +2.661, d 1.57 and 1.51). Six paraphrases, and none of these p-values are corrected.
+
+![Scenario-minus-control gaps on cleaned directions at layer 29 for Qwen2.5-3B-Instruct](results/phase02_scenarios/Qwen_Qwen2.5-3B-Instruct/figures/scenario_effects.png)
+
+## Phase 03
+
+The runner and the notebook are in the repo. A run writes `results/phase03_performance/<model>/` and is not committed. Anger is the pre-registered internal signal, because insult to anger is the keyword-free cell that kept its sign on both models above. The other emotion directions are exploratory and land in `exploratory_effects.csv`. There is no accuracy, tone, or projection number from phase 03 in this README, because none has been produced here. Quote a run from its `metrics.json`, and read the caveat in that file before the tables. For `Qwen/Qwen2.5-3B-Instruct` on a free T4, set `EMOTION_MODEL_ID` and `EMOTION_QUICK=1`. That checkpoint has no committed direction file, so the notebook refits before it generates.
 
 ## Pipeline check, not a result
 

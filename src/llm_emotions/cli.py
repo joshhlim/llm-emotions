@@ -16,7 +16,6 @@ from llm_emotions.phases import (
 )
 
 _STUB_RUNNERS = {
-    "phase03_performance": run_phase03_performance,
     "phase04_steering": run_phase04_steering,
 }
 
@@ -47,6 +46,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Fit directions and score scenarios without generating steered samples.",
     )
     run.add_argument(
+        "--quick",
+        action="store_true",
+        help="Phase 03 only: score the first two items of each kind instead of the full set.",
+    )
+    run.add_argument(
         "--dry-run",
         action="store_true",
         help="Resolve the config and print the output directory. Do not load a model.",
@@ -67,6 +71,10 @@ def _apply_overrides(config: ExperimentConfig, args: argparse.Namespace) -> None
         config.max_new_tokens = args.max_new_tokens
     if args.output_root is not None:
         config.output_root = args.output_root
+    if args.quick:
+        if config.experiment != "phase03_performance":
+            raise ValueError("--quick applies to phase 03 only.")
+        config.quick = True
     config.validate()
 
 
@@ -84,6 +92,9 @@ def _dispatch(config: ExperimentConfig, *, do_steering: bool) -> None:
     if config.experiment == "phase02_scenarios":
         run_phase02_scenarios(config)
         return
+    if config.experiment == "phase03_performance":
+        run_phase03_performance(config)
+        return
     runner = _STUB_RUNNERS.get(config.experiment)
     if runner is not None:
         runner(config)
@@ -100,7 +111,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.command != "run":
         parser.error(f"Unknown command {args.command!r}.")
     config = load_config(args.config)
-    _apply_overrides(config, args)
+    try:
+        _apply_overrides(config, args)
+    except ValueError as exc:
+        parser.error(str(exc))
     if args.dry_run:
         print(f"experiment: {config.experiment}")
         print(f"status: {config.status}")
@@ -110,6 +124,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"batch_size: {config.batch_size}")
         print(f"max_new_tokens: {config.max_new_tokens}")
         print(f"n_null: {config.n_null}")
+        print(f"n_boot: {config.n_boot}")
+        print(f"quick: {config.quick}")
         print(f"output_dir: {config.output_dir()}")
         return 0
     try:

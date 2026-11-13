@@ -30,12 +30,20 @@ models/
 *.onnx
 
 # Experiment outputs. Regenerate with `llm-emotions run`.
-# The committed phase-01 T4 snapshot is the exception. Parents have to be
+# The committed T4 snapshots are the exception. Parents have to be
 # re-included or git will not descend into an ignored directory.
 results/**
 !results/phase01_directions/
 !results/phase01_directions/Qwen_Qwen2.5-1.5B-Instruct/
 !results/phase01_directions/Qwen_Qwen2.5-1.5B-Instruct/**
+!results/phase02_scenarios/
+!results/phase02_scenarios/Qwen_Qwen2.5-1.5B-Instruct/
+!results/phase02_scenarios/Qwen_Qwen2.5-1.5B-Instruct/**
+!results/phase02_scenarios/Qwen_Qwen2.5-3B-Instruct/
+!results/phase02_scenarios/Qwen_Qwen2.5-3B-Instruct/**
+# The 3B snapshot omits directions.npz on purpose. A local refit should not
+# be committed over that decision.
+results/phase02_scenarios/Qwen_Qwen2.5-3B-Instruct/directions.npz
 outputs/
 wandb/
 mlruns/

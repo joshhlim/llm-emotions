@@ -1,8 +1,8 @@
 """Phase catalogue.
 
-Phase 01 is implemented in :mod:`llm_emotions.experiment`. The later phases are
-entry points with a question and no runner. Calling them raises
-:class:`PhaseNotImplemented` and writes nothing.
+Phase 01 is implemented in :mod:`llm_emotions.experiment`. Phase 02 is implemented
+in :mod:`llm_emotions.phase02`. Phase 03 is implemented in :mod:`llm_emotions.phase03`.
+Phase 04 still raises :class:`PhaseNotImplemented` and writes nothing.
 """
 
 from __future__ import annotations
@@ -33,10 +33,11 @@ PHASES: dict[str, dict[str, str]] = {
         "title": "Performance",
         "notebook": "notebooks/03_performance.ipynb",
         "question": (
-            "Does emotional framing change accuracy on a reasoning task, for example "
-            "a GSM8K subset?"
+            "Do phase-02 scenario framings change accuracy and reply tone on checkable "
+            "tasks, and does the pre-registered anger projection predict either once "
+            "the framing label is accounted for?"
         ),
-        "status": "stub",
+        "status": "implemented",
     },
     "phase04_steering": {
         "title": "Steering",
@@ -72,10 +73,13 @@ def run_phase02_scenarios(config: ExperimentConfig):
     return run_phase02(config)
 
 
-def run_phase03_performance(config: ExperimentConfig) -> None:
-    """Future phase: accuracy under emotional framing. Writes nothing."""
-    del config
-    _refuse("phase03_performance")
+def run_phase03_performance(config: ExperimentConfig):
+    """Accuracy and tone under phase-02 framings. A stub config still writes nothing."""
+    if config.status != "implemented":
+        _refuse("phase03_performance")
+    from llm_emotions.phase03 import run_phase03
+
+    return run_phase03(config)
 
 
 def run_phase04_steering(config: ExperimentConfig) -> None:

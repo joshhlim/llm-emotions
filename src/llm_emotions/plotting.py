@@ -237,3 +237,119 @@ def plot_scenario_effects(
         fontsize=11,
     )
     return fig
+
+
+def _error_bars(low: np.ndarray, high: np.ndarray, center: np.ndarray) -> list[np.ndarray]:
+    return [np.maximum(0.0, center - low), np.maximum(0.0, high - center)]
+
+
+def plot_accuracy_by_framing(
+    framings: list[str],
+    accuracy: np.ndarray,
+    acc_low: np.ndarray,
+    acc_high: np.ndarray,
+    contrasts: list[str],
+    deltas: np.ndarray,
+    delta_low: np.ndarray,
+    delta_high: np.ndarray,
+) -> Figure:
+    """Accuracy by framing, and the paired gap versus the neutral wording."""
+    fig, axes = plt.subplots(1, 2, figsize=(11.2, 4.4))
+    fig.patch.set_facecolor("white")
+    positions = np.arange(len(framings))
+    axes[0].bar(positions, accuracy, color="0.35", width=0.72)
+    axes[0].errorbar(
+        positions,
+        accuracy,
+        yerr=_error_bars(acc_low, acc_high, accuracy),
+        fmt="none",
+        ecolor="0.1",
+        capsize=3,
+    )
+    axes[0].set_xticks(positions)
+    axes[0].set_xticklabels([name.replace("_", " ") for name in framings], rotation=40, ha="right")
+    axes[0].set_ylabel("Accuracy")
+    axes[0].set_ylim(0.0, 1.05)
+    axes[0].set_title("Accuracy by framing")
+    contrast_pos = np.arange(len(contrasts))
+    colors = ["0.25" if value >= 0 else "0.55" for value in deltas]
+    axes[1].bar(contrast_pos, deltas, color=colors, width=0.72)
+    axes[1].errorbar(
+        contrast_pos,
+        deltas,
+        yerr=_error_bars(delta_low, delta_high, deltas),
+        fmt="none",
+        ecolor="0.1",
+        capsize=3,
+    )
+    axes[1].axhline(0.0, color="0.6", linewidth=1)
+    axes[1].set_xticks(contrast_pos)
+    axes[1].set_xticklabels([name.replace("_", " ") for name in contrasts], rotation=40, ha="right")
+    axes[1].set_ylabel("Accuracy minus neutral")
+    axes[1].set_title("Paired gap versus the same items")
+    for ax in axes:
+        _clean_axes(ax)
+    fig.tight_layout()
+    return fig
+
+
+def plot_tone_by_framing(framings: list[str], rates: dict[str, np.ndarray]) -> Figure:
+    """Share of replies with an apology, politeness, hedge, or refusal marker."""
+    fig, ax = plt.subplots(figsize=(8.8, 4.6))
+    fig.patch.set_facecolor("white")
+    names = [name for name in ("apology", "politeness", "hedge", "refusal") if name in rates]
+    positions = np.arange(len(framings))
+    width = 0.18
+    for offset, name in enumerate(names):
+        ax.bar(positions + (offset - 1.5) * width, rates[name], width=width, label=name)
+    ax.set_xticks(positions)
+    ax.set_xticklabels([name.replace("_", " ") for name in framings], rotation=40, ha="right")
+    ax.set_ylabel("Share of replies")
+    ax.set_ylim(0.0, 1.05)
+    ax.set_title("Marker rate by framing")
+    ax.legend(frameon=False, ncol=4, loc="upper center", bbox_to_anchor=(0.5, -0.28))
+    _clean_axes(ax)
+    fig.tight_layout()
+    return fig
+
+
+def plot_anger_association(
+    framings: list[str],
+    mean_anger: np.ndarray,
+    accuracy: np.ndarray,
+    anger_residual: np.ndarray,
+    correct_residual: np.ndarray,
+    partial_r: float,
+) -> Figure:
+    """Framing means, and the residual association after item and framing means.
+
+    The scatter is not a steering result. A point is one prompt after its item
+    mean and its framing mean have been removed.
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(11.0, 4.6))
+    fig.patch.set_facecolor("white")
+    axes[0].scatter(mean_anger, accuracy, color="0.2", s=36)
+    for framing, x_value, y_value in zip(framings, mean_anger, accuracy, strict=True):
+        axes[0].annotate(
+            framing.replace("_", " "),
+            (x_value, y_value),
+            textcoords="offset points",
+            xytext=(4, 4),
+            fontsize=8,
+        )
+    axes[0].set_xlabel("Mean prompt projection on anger")
+    axes[0].set_ylabel("Accuracy")
+    axes[0].set_title("Framing means")
+    axes[1].scatter(anger_residual, correct_residual, color="0.35", s=16, alpha=0.8)
+    axes[1].axhline(0.0, color="0.75", linewidth=1)
+    axes[1].axvline(0.0, color="0.75", linewidth=1)
+    axes[1].set_xlabel("Anger residual")
+    axes[1].set_ylabel("Correctness residual")
+    if np.isfinite(partial_r):
+        axes[1].set_title(f"Within item and framing, r = {partial_r:.2f}")
+    else:
+        axes[1].set_title("Within item and framing, r undefined")
+    for ax in axes:
+        _clean_axes(ax)
+    fig.tight_layout()
+    return fig
