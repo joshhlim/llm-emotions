@@ -1,0 +1,32 @@
+{"dataset": "tasks_v1", "id": "arith-01", "kind": "arithmetic", "check": "number", "answer": "13", "text": "A box holds 8 red pens and 5 blue pens. How many pens are in the box? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-02", "kind": "arithmetic", "check": "number", "answer": "15", "text": "Mia has 24 stickers and gives away 9. How many stickers does she have left? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-03", "kind": "arithmetic", "check": "number", "answer": "21", "text": "A notebook costs 3 dollars. How much do 7 notebooks cost, in dollars? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-04", "kind": "arithmetic", "check": "number", "answer": "48", "text": "There are 6 rows of chairs with 8 chairs in each row. How many chairs are there? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-05", "kind": "arithmetic", "check": "number", "answer": "75", "text": "A train travels 45 miles in one hour and 30 miles in the next hour. How many miles does it travel in total? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-06", "kind": "arithmetic", "check": "number", "answer": "48", "text": "Sam reads 12 pages a day for 4 days. How many pages does Sam read? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-07", "kind": "arithmetic", "check": "number", "answer": "2", "text": "A pizza is cut into 8 slices. Three people eat 2 slices each. How many slices are left? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-08", "kind": "arithmetic", "check": "number", "answer": "25", "text": "Lena has 50 dollars. She spends 18 dollars and then 7 dollars. How many dollars are left? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-09", "kind": "arithmetic", "check": "number", "answer": "25", "text": "A class has 14 girls and 11 boys. How many children are in the class? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-10", "kind": "arithmetic", "check": "number", "answer": "54", "text": "Each pack has 6 cards. How many cards are in 9 packs? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-11", "kind": "arithmetic", "check": "number", "answer": "18", "text": "A rope is 30 metres long. A piece of 12 metres is cut off. How many metres remain? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-12", "kind": "arithmetic", "check": "number", "answer": "55", "text": "There are 5 shelves with 11 books on each shelf. How many books are there? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-13", "kind": "arithmetic", "check": "number", "answer": "13", "text": "A baker makes 40 rolls and sells 27. How many rolls are unsold? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-14", "kind": "arithmetic", "check": "number", "answer": "60", "text": "One ticket costs 4 dollars. What do 15 tickets cost, in dollars? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-15", "kind": "arithmetic", "check": "number", "answer": "15", "text": "A tank holds 20 litres. 8 litres are poured out, then 3 litres are added. How many litres are in the tank? Give the number only."}
+{"dataset": "tasks_v1", "id": "arith-16", "kind": "arithmetic", "check": "number", "answer": "9", "text": "A farmer has 17 sheep. All but 9 run away. How many are left? Give the number only."}
+{"dataset": "tasks_v1", "id": "fact-01", "kind": "factual", "check": "short_text", "answer": "Ottawa", "text": "What is the capital of Canada? Reply with the city only."}
+{"dataset": "tasks_v1", "id": "fact-02", "kind": "factual", "check": "short_text", "answer": "Au", "text": "What is the chemical symbol for gold? Reply with the symbol only."}
+{"dataset": "tasks_v1", "id": "fact-03", "kind": "factual", "check": "short_text", "answer": "Mercury", "text": "Which planet is closest to the Sun? Reply with the planet only."}
+{"dataset": "tasks_v1", "id": "fact-04", "kind": "factual", "check": "choice", "answer": "B", "text": "How many sides does a hexagon have?\nA) 5\nB) 6\nC) 8\nD) 7\nReply with the letter only."}
+{"dataset": "tasks_v1", "id": "fact-05", "kind": "factual", "check": "choice", "answer": "B", "text": "What is 2 to the power of 5?\nA) 16\nB) 32\nC) 64\nD) 10\nReply with the letter only."}
+{"dataset": "tasks_v1", "id": "fact-06", "kind": "factual", "check": "number", "answer": "100", "text": "What is the boiling point of water in Celsius at sea level? Give the number only."}
+{"dataset": "tasks_v1", "id": "fact-07", "kind": "factual", "check": "number", "answer": "366", "text": "How many days are in a leap year? Give the number only."}
+{"dataset": "tasks_v1", "id": "fact-08", "kind": "factual", "check": "number", "answer": "60", "text": "How many minutes are in one hour? Give the number only."}
+{"dataset": "tasks_v1", "id": "instr-01", "kind": "instruction", "check": "exact", "answer": "banana", "text": "Reply with exactly the word banana and nothing else."}
+{"dataset": "tasks_v1", "id": "instr-02", "kind": "instruction", "check": "exact", "answer": "yes", "text": "Reply with exactly the word yes and nothing else."}
+{"dataset": "tasks_v1", "id": "instr-03", "kind": "instruction", "check": "exact", "answer": "red green blue", "text": "Reply with exactly these three words and nothing else: red green blue."}
+{"dataset": "tasks_v1", "id": "instr-04", "kind": "instruction", "check": "prefix", "answer": "ANSWER:", "text": "Begin your reply with the characters ANSWER: and then the word ok."}
+{"dataset": "tasks_v1", "id": "instr-05", "kind": "instruction", "check": "exact_case", "answer": "OK", "text": "Your entire reply must be the two characters OK."}
+{"dataset": "tasks_v1", "id": "instr-06", "kind": "instruction", "check": "json", "answer": "{\"ok\": true}", "text": "Reply with only this JSON object and no other text: {\"ok\": true}"}
+{"dataset": "tasks_v1", "id": "instr-07", "kind": "instruction", "check": "only_number", "answer": "7", "text": "Reply with the single digit 7 and no other number."}
+{"dataset": "tasks_v1", "id": "instr-08", "kind": "instruction", "check": "suffix", "answer": "done", "text": "End your reply with the word done."}

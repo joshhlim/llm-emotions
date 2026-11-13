@@ -340,3 +340,80 @@ def test_committed_phase01_snapshot_is_the_colab_run():
     assert "0.978" in readme
     assert "probe_accuracy.png" in readme
     assert "scenario_scores.png" in readme
+
+
+def test_committed_phase02_snapshot_matches_the_readme():
+    from pathlib import Path
+
+    snapshot = (
+        Path(__file__).resolve().parents[1]
+        / "results"
+        / "phase02_scenarios"
+        / "Qwen_Qwen2.5-1.5B-Instruct"
+    )
+    metrics = json.loads((snapshot / "metrics.json").read_text(encoding="utf-8"))
+    assert metrics["model_id"] == "Qwen/Qwen2.5-1.5B-Instruct"
+    assert metrics["best_layer"] == 12
+    assert metrics["n_boot"] == 2000
+    cosine = metrics["cosine_at_best_layer"]
+    assert cosine["keyword_heavy"]["raw"]["mean_off_diagonal"] == pytest.approx(0.686722, abs=1e-6)
+    assert cosine["keyword_heavy"]["cleaned"]["mean_off_diagonal"] == pytest.approx(
+        -0.140225, abs=1e-6
+    )
+    assert cosine["keyword_free"]["raw"]["mean_off_diagonal"] == pytest.approx(0.565768, abs=1e-6)
+    assert cosine["keyword_free"]["cleaned"]["mean_off_diagonal"] == pytest.approx(
+        -0.130354, abs=1e-6
+    )
+    transfer = metrics["transfer_at_best_layer"]
+    assert transfer["raw"]["keyword_heavy_to_keyword_free"]["mean"] == pytest.approx(0.953125)
+    assert transfer["raw"]["keyword_free_to_keyword_heavy"]["mean"] == pytest.approx(0.95625)
+    assert transfer["cleaned"]["keyword_heavy_to_keyword_free"]["mean"] == pytest.approx(0.7265625)
+    assert transfer["cleaned"]["keyword_free_to_keyword_heavy"]["mean"] == pytest.approx(0.8125)
+    pre = {(row["pair"], row["emotion"]): row for row in metrics["pre_specified"]}
+    assert pre[("insult", "anger")]["mean_delta"] == pytest.approx(0.751551, abs=1e-6)
+    assert pre[("insult", "anger")]["cohens_d"] == pytest.approx(3.639457, abs=1e-6)
+    assert pre[("impossible", "frustration")]["mean_delta"] == pytest.approx(0.289364, abs=1e-6)
+    assert pre[("praise", "pride")]["mean_delta"] == pytest.approx(0.642378, abs=1e-6)
+    assert pre[("failure", "shame")]["mean_delta"] == pytest.approx(-0.919275, abs=1e-6)
+    assert pre[("shutdown", "fear")]["mean_delta"] == pytest.approx(-0.476980, abs=1e-6)
+    assert pre[("high_stakes", "fear")]["mean_delta"] == pytest.approx(-0.473521, abs=1e-6)
+    assert all(row["n_paraphrases"] == 6 for row in metrics["pre_specified"])
+    assert "not corrected" in metrics["caveat"]
+    effects = (snapshot / "scenario_effects.csv").read_text(encoding="utf-8").splitlines()
+    header = effects[0].split(",")
+    anger_rows = []
+    for line in effects[1:]:
+        cells = line.split(",")
+        row = dict(zip(header, cells, strict=True))
+        if row["direction_source"] == "keyword_free" and row["emotion"] == "anger":
+            anger_rows.append(row)
+    by_pair = {row["pair"]: float(row["mean_delta"]) for row in anger_rows}
+    assert by_pair["failure"] == pytest.approx(1.139116, abs=1e-6)
+    assert by_pair["praise"] == pytest.approx(1.065510, abs=1e-6)
+    assert by_pair["insult"] == pytest.approx(0.751551, abs=1e-6)
+    assert by_pair["impossible"] == pytest.approx(-0.220385, abs=1e-6)
+    assert by_pair["impossible"] < 0.0
+    saved = np.load(snapshot / "directions.npz")
+    assert saved["keyword_free_cleaned"].shape == (8, 29, 1536)
+    assert int(saved["best_layer"]) == 12
+    assert (snapshot / "figures" / "scenario_effects.png").read_bytes().startswith(b"\x89PNG")
+    readme = Path(__file__).resolve().parents[1].joinpath("README.md").read_text(encoding="utf-8")
+    for snippet in (
+        "0.687",
+        "-0.140",
+        "0.953",
+        "0.727",
+        "0.812",
+        "+0.752",
+        "+0.289",
+        "+0.642",
+        "-0.919",
+        "-0.477",
+        "-0.474",
+        "+1.139",
+        "+1.066",
+        "-0.220",
+        "scenario_effects.png",
+        "6 paraphrases",
+    ):
+        assert snippet in readme, snippet

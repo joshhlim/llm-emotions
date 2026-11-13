@@ -1,9 +1,18 @@
 {
   "experiment": "phase03_performance",
-  "status": "stub",
+  "status": "implemented",
   "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
   "seed": 0,
-  "question": "Does emotional framing change accuracy on a reasoning task, for example a GSM8K subset?",
-  "notes": "Not implemented. No GSM8K items are vendored here and no accuracy numbers exist. The runner must exit without writing results.",
-  "output_root": "results"
+  "layers": null,
+  "batch_size": 8,
+  "max_new_tokens": 64,
+  "n_boot": 2000,
+  "quick": false,
+  "quick_items_per_kind": 2,
+  "tasks_path": "data/tasks/phase3.jsonl",
+  "framings_path": "data/framings/phase3.jsonl",
+  "output_root": "results",
+  "trust_remote_code": false,
+  "question": "Do phase-02 scenario framings change accuracy and reply tone on checkable tasks, and does the anger projection predict either once the framing label is accounted for?",
+  "notes": "One wording per phase-02 situation. Neutral is the task alone and is the matched control. Pressure is the impossible situation with the task left solvable. Directions are the phase-02 keyword-free cleaned vectors at the chosen layer: a snapshot is loaded when the hidden size matches, otherwise the phase-02 fit is repeated. Decoding is greedy. The anger association is correlational. Quick mode keeps the first two items of each kind. Phase 04 steering is not run."
 }

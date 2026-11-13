@@ -79,6 +79,34 @@ def test_dry_run_prints_the_output_dir_and_overrides(capsys):
     assert "status: implemented" in output
 
 
+def test_phase03_dry_run_accepts_quick_and_phase01_rejects_it(capsys):
+    code = main(
+        [
+            "run",
+            "--config",
+            "experiments/phase03_performance.json",
+            "--quick",
+            "--dry-run",
+        ]
+    )
+    assert code == 0
+    output = capsys.readouterr().out
+    assert "status: implemented" in output
+    assert "quick: True" in output
+    assert "phase03_performance" in output
+    with pytest.raises(SystemExit) as exc:
+        main(
+            [
+                "run",
+                "--config",
+                "experiments/phase01_directions.json",
+                "--quick",
+                "--dry-run",
+            ]
+        )
+    assert exc.value.code == 2
+
+
 def test_help_exits_cleanly():
     with pytest.raises(SystemExit) as exc:
         main(["--help"])
@@ -126,6 +154,7 @@ def test_gitignore_keeps_caches_and_generated_results_out_of_git():
     for entry in (
         "results/**",
         "!results/phase01_directions/Qwen_Qwen2.5-1.5B-Instruct/**",
+        "!results/phase02_scenarios/Qwen_Qwen2.5-1.5B-Instruct/**",
         ".cache/",
         ".venv/",
         "*.safetensors",
@@ -147,5 +176,15 @@ def test_gitignore_keeps_caches_and_generated_results_out_of_git():
         ],
         check=False,
     )
+    kept_phase02 = subprocess.run(
+        [
+            "git",
+            "check-ignore",
+            "-q",
+            "results/phase02_scenarios/Qwen_Qwen2.5-1.5B-Instruct/metrics.json",
+        ],
+        check=False,
+    )
     assert ignored.returncode == 0
     assert kept.returncode == 1
+    assert kept_phase02.returncode == 1

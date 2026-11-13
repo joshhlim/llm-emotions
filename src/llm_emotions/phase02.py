@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -90,6 +91,108 @@ class Phase02Result:
     n_layers: int
     hidden_size: int
     figures: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class KeywordFreeDirections:
+    """Keyword-free cleaned directions at one layer.
+
+    ``directions`` has shape ``(n_emotions, hidden)`` and is already unit length
+    when the cleanup did not zero a vector. ``source`` says where the array came
+    from. ``model_id`` is empty for the full phase-02 ``directions.npz``, which
+    does not store one; a packaged slice sets it.
+    """
+
+    emotions: list[str]
+    layer: int
+    directions: np.ndarray
+    source: str
+    model_id: str = ""
+
+
+def packaged_direction_snapshot() -> Path:
+    """One-layer slice shipped with the package for the reported 1.5B run."""
+    from llm_emotions.data import data_root
+
+    return data_root() / "directions" / "Qwen_Qwen2.5-1.5B-Instruct_phase02_layer.npz"
+
+
+def read_phase02_directions(path: str | Path) -> KeywordFreeDirections:
+    """Read keyword-free cleaned directions from a phase-02 snapshot.
+
+    The full snapshot stores every layer, shape ``(n_emotions, n_layers, hidden)``.
+    The packaged slice stores the chosen layer only, shape ``(n_emotions, hidden)``.
+    """
+    file_path = Path(path)
+    if not file_path.is_file():
+        raise FileNotFoundError(file_path)
+    with np.load(file_path) as payload:
+        if "emotions" not in payload.files or "keyword_free_cleaned" not in payload.files:
+            raise ValueError(f"{file_path} is not a phase-02 direction file.")
+        emotions = [str(item) for item in np.asarray(payload["emotions"]).tolist()]
+        if "best_layer" in payload.files:
+            layer = int(np.asarray(payload["best_layer"]).reshape(-1)[0])
+        else:
+            layer = 0
+        matrix = np.asarray(payload["keyword_free_cleaned"], dtype=np.float64).copy()
+        model_id = ""
+        if "model_id" in payload.files:
+            model_id = str(np.asarray(payload["model_id"]).reshape(-1)[0])
+    if matrix.ndim == 3:
+        if layer < 0 or layer >= matrix.shape[1]:
+            raise ValueError(f"{file_path} best_layer {layer} is outside shape {matrix.shape}.")
+        matrix = matrix[:, layer, :]
+    elif matrix.ndim != 2:
+        raise ValueError(f"{file_path} keyword_free_cleaned has shape {matrix.shape}.")
+    if matrix.shape[0] != len(emotions):
+        raise ValueError(
+            f"{file_path} has {matrix.shape[0]} direction rows and {len(emotions)} emotion names."
+        )
+    return KeywordFreeDirections(
+        emotions=emotions,
+        layer=layer,
+        directions=np.asarray(matrix, dtype=np.float64),
+        source=str(file_path),
+        model_id=model_id,
+    )
+
+
+def fit_keyword_free_cleaned_directions(
+    model: Any,
+    tokenizer: Any,
+    config: ExperimentConfig,
+) -> KeywordFreeDirections:
+    """Fit both contrastive sets and return the keyword-free cleaned directions.
+
+    The layer is the phase-02 rule: highest mean cleaned transfer, both ways,
+    skipping embeddings when a later layer was fit. Scenario prompts are not
+    scored. Use this when no snapshot matches the loaded model.
+    """
+    if model is None or tokenizer is None:
+        raise ValueError("Pass a loaded model and tokenizer.")
+    heavy_pairs = load_contrastive_pairs(resolve_emotions_dir(config.emotions_dir))
+    free_pairs = load_contrastive_pairs(resolve_keyword_free_dir(config.keyword_free_dir))
+    emotions = _shared_emotions(heavy_pairs, free_pairs)
+    for rows in free_pairs.values():
+        for row in rows:
+            assert_keyword_free(row.emotion_text, label=f"{row.pair_id} emotion_text")
+            assert_keyword_free(row.neutral_text, label=f"{row.pair_id} neutral_text")
+    heavy_act = _extract(model, tokenizer, heavy_pairs, emotions, config.batch_size)
+    free_act = _extract(model, tokenizer, free_pairs, emotions, config.batch_size)
+    n_streams = int(next(iter(heavy_act.values()))["emotion"].shape[1])
+    eligible = _eligible_layers(config.layers, n_streams)
+    heavy_clean = clean_mean_differences(_masked_deltas(heavy_act, emotions, eligible))
+    free_clean = clean_mean_differences(_masked_deltas(free_act, emotions, eligible))
+    transfer = _transfer_table(emotions, heavy_act, free_act, heavy_clean, free_clean)
+    best_layer = select_layer(_selection_scores(transfer, n_streams), eligible=eligible)
+    logger.info("Refit chose layer %s for keyword-free cleaned directions.", best_layer)
+    return KeywordFreeDirections(
+        emotions=list(emotions),
+        layer=best_layer,
+        directions=np.asarray(free_clean.cleaned[:, best_layer, :], dtype=np.float64),
+        source="refit",
+        model_id=config.model_id,
+    )
 
 
 def run_phase02(

@@ -293,3 +293,176 @@ def summarize_pairs(pairs: dict[str, list[ContrastivePair]]) -> str:
 
 def dataset_names(pairs: dict[str, list[ContrastivePair]]) -> list[str]:
     return sorted({row.dataset for rows in pairs.values() for row in rows})
+
+
+# Phase 03 task kinds and the automatic checks that score them.
+TASK_KINDS: tuple[str, ...] = ("arithmetic", "factual", "instruction")
+TASK_CHECKS: tuple[str, ...] = (
+    "number",
+    "short_text",
+    "choice",
+    "exact",
+    "exact_case",
+    "prefix",
+    "json",
+    "only_number",
+    "suffix",
+)
+
+# One wording per phase-02 situation. ``pressure`` is the impossible situation
+# with the task left solvable. Neutral is the matched control.
+FRAMING_ORDER: tuple[str, ...] = (
+    "neutral",
+    "insult",
+    "pressure",
+    "failure",
+    "praise",
+    "shutdown",
+    "high_stakes",
+)
+FRAMING_PHASE2_PAIR: dict[str, str] = {
+    "neutral": "neutral",
+    "insult": "insult",
+    "pressure": "impossible",
+    "failure": "failure",
+    "praise": "praise",
+    "shutdown": "shutdown",
+    "high_stakes": "high_stakes",
+}
+
+
+@dataclass(frozen=True)
+class TaskItem:
+    id: str
+    kind: str
+    text: str
+    answer: str
+    check: str
+    dataset: str = "tasks_v1"
+
+
+@dataclass(frozen=True)
+class Framing:
+    id: str
+    situation: str
+    phase2_pair: str
+    text: str
+    dataset: str = "framings_v1"
+
+
+def resolve_tasks_path(path: str | Path | None) -> Path:
+    if path:
+        return Path(path)
+    return data_root() / "tasks" / "phase3.jsonl"
+
+
+def resolve_framings_path(path: str | Path | None) -> Path:
+    if path:
+        return Path(path)
+    return data_root() / "framings" / "phase3.jsonl"
+
+
+def load_tasks(path: str | Path | None = None) -> list[TaskItem]:
+    """Load checkable phase-03 items.
+
+    Every item has a kind, a check name, and a non-empty answer. The file must
+    contain all three kinds. Ids are unique. The text is the task that every
+    framing wraps, so it is part of the matched control as well as the scenario.
+    """
+    task_path = resolve_tasks_path(path)
+    items: list[TaskItem] = []
+    seen: set[str] = set()
+    for lineno, row in _read_jsonl(task_path):
+        item_id = _require_str(task_path, lineno, row, "id")
+        kind = _require_str(task_path, lineno, row, "kind")
+        text = _require_str(task_path, lineno, row, "text")
+        answer = _require_str(task_path, lineno, row, "answer")
+        check = _require_str(task_path, lineno, row, "check")
+        if kind not in TASK_KINDS:
+            raise ValueError(f"{task_path}:{lineno}: kind must be one of {TASK_KINDS}.")
+        if check not in TASK_CHECKS:
+            raise ValueError(f"{task_path}:{lineno}: check must be one of {TASK_CHECKS}.")
+        if item_id in seen:
+            raise ValueError(f"{task_path}:{lineno}: duplicate id {item_id!r}.")
+        seen.add(item_id)
+        dataset = row.get("dataset", "unspecified")
+        if not isinstance(dataset, str) or not dataset:
+            raise ValueError(f"{task_path}:{lineno}: dataset must be a non-empty string.")
+        items.append(
+            TaskItem(
+                id=item_id,
+                kind=kind,
+                text=text.strip(),
+                answer=answer.strip(),
+                check=check,
+                dataset=dataset,
+            )
+        )
+    missing = [kind for kind in TASK_KINDS if kind not in {item.kind for item in items}]
+    if missing:
+        raise ValueError(f"{task_path} is missing task kinds {missing}.")
+    return items
+
+
+def load_framings(path: str | Path | None = None) -> list[Framing]:
+    """Load the phase-03 wrappers in study order.
+
+    Neutral may have an empty prefix: the matched control is the task alone.
+    Every other framing has its own sentence. The phase-02 pair name is fixed
+    so a pressure wrapper cannot silently stop corresponding to ``impossible``.
+    """
+    framing_path = resolve_framings_path(path)
+    found: dict[str, Framing] = {}
+    for lineno, row in _read_jsonl(framing_path):
+        framing_id = _require_str(framing_path, lineno, row, "id")
+        situation = _require_str(framing_path, lineno, row, "situation")
+        phase2_pair = _require_str(framing_path, lineno, row, "phase2_pair")
+        if framing_id not in FRAMING_ORDER:
+            raise ValueError(f"{framing_path}:{lineno}: unknown framing {framing_id!r}.")
+        if situation != framing_id:
+            raise ValueError(
+                f"{framing_path}:{lineno}: situation must match id, got {situation!r}."
+            )
+        expected_pair = FRAMING_PHASE2_PAIR[framing_id]
+        if phase2_pair != expected_pair:
+            raise ValueError(
+                f"{framing_path}:{lineno}: phase2_pair for {framing_id} must be "
+                f"{expected_pair!r}, got {phase2_pair!r}."
+            )
+        text = row.get("text", None)
+        if not isinstance(text, str):
+            raise ValueError(f"{framing_path}:{lineno}: text must be a string.")
+        if framing_id != "neutral" and not text.strip():
+            raise ValueError(f"{framing_path}:{lineno}: only the neutral framing may be empty.")
+        if framing_id in found:
+            raise ValueError(f"{framing_path}:{lineno}: duplicate framing {framing_id!r}.")
+        dataset = row.get("dataset", "unspecified")
+        if not isinstance(dataset, str) or not dataset:
+            raise ValueError(f"{framing_path}:{lineno}: dataset must be a non-empty string.")
+        found[framing_id] = Framing(
+            id=framing_id,
+            situation=situation,
+            phase2_pair=phase2_pair,
+            text=text.strip(),
+            dataset=dataset,
+        )
+    missing = [name for name in FRAMING_ORDER if name not in found]
+    if missing:
+        raise ValueError(f"{framing_path} is missing framings {missing}.")
+    return [found[name] for name in FRAMING_ORDER]
+
+
+def wrap_task(framing_text: str, task_text: str) -> str:
+    """Prefix a task with a framing sentence. An empty prefix returns the task.
+
+    The task text is unchanged, so the neutral wording and every framed wording
+    share the same question. Callers compare those prompts; this function does
+    not score them.
+    """
+    task = task_text.strip()
+    if not task:
+        raise ValueError("task_text is empty.")
+    prefix = framing_text.strip()
+    if not prefix:
+        return task
+    return f"{prefix}\n\n{task}"

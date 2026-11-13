@@ -48,6 +48,12 @@ class ExperimentConfig:
     n_null: int = 400
     output_root: str = "results"
     trust_remote_code: bool = False
+    tasks_path: str | None = None
+    framings_path: str | None = None
+    directions_path: str | None = None
+    quick: bool = False
+    n_boot: int = 2000
+    quick_items_per_kind: int = 2
     question: str = ""
     notes: str = ""
 
@@ -62,6 +68,10 @@ class ExperimentConfig:
         self.n_splits = int(self.n_splits)
         self.probe_max_iter = int(self.probe_max_iter)
         self.n_null = int(self.n_null)
+        self.n_boot = int(self.n_boot)
+        self.quick_items_per_kind = int(self.quick_items_per_kind)
+        if not isinstance(self.quick, bool):
+            raise ValueError("quick must be a boolean.")
         self.validate()
 
     def validate(self) -> None:
@@ -91,6 +101,10 @@ class ExperimentConfig:
             raise ValueError("output_root must be a non-empty string.")
         if not 1 <= self.n_null <= 5000:
             raise ValueError("n_null must be between 1 and 5000.")
+        if not 1 <= self.n_boot <= 20000:
+            raise ValueError("n_boot must be between 1 and 20000.")
+        if self.quick_items_per_kind < 1:
+            raise ValueError("quick_items_per_kind must be >= 1.")
         if self.layers is not None:
             if len(self.layers) == 0:
                 raise ValueError("layers is empty. Use null to mean every layer.")
@@ -118,6 +132,9 @@ class ExperimentConfig:
             self.seed = int(source["EMOTION_SEED"])
         if source.get("EMOTION_LAYERS"):
             self.layers = parse_layers(source["EMOTION_LAYERS"])
+        quick = source.get("EMOTION_QUICK", "").strip().lower()
+        if quick in {"1", "true", "yes", "y"}:
+            self.quick = True
         self.validate()
         return self
 
@@ -175,9 +192,19 @@ def load_config(path: str | Path) -> ExperimentConfig:
     if unknown:
         raise ValueError(f"Unknown config keys in {config_path}: {unknown}")
     base = config_base_dir(config_path)
-    for key in ("emotions_dir", "keyword_free_dir", "scenarios_path", "neutral_prompts_path"):
-        if isinstance(raw.get(key), str):
+    for key in (
+        "emotions_dir",
+        "keyword_free_dir",
+        "scenarios_path",
+        "neutral_prompts_path",
+        "tasks_path",
+        "framings_path",
+        "directions_path",
+    ):
+        if isinstance(raw.get(key), str) and raw[key].strip():
             raw[key] = _resolve_config_path(base, raw[key])
+        elif raw.get(key) == "":
+            raw[key] = None
     if isinstance(raw.get("output_root"), str):
         raw["output_root"] = _resolve_config_path(base, raw["output_root"])
     return ExperimentConfig(**raw)
