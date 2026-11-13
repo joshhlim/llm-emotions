@@ -40,6 +40,39 @@ def format_cosine_table(emotions: list[str], cosine: np.ndarray) -> str:
     return "\n".join(lines)
 
 
+def format_phase02_summary(metrics: dict) -> str:
+    """Short text form of the phase-02 metrics. Numbers come from the run, not from this file."""
+    lines = [
+        metrics["layer_selection"],
+        (
+            f"Chosen layer {metrics['best_layer']}. "
+            f"Mean cleaned transfer accuracy there: "
+            f"{metrics['mean_cleaned_transfer_at_best_layer']:.3f}."
+        ),
+    ]
+    for dataset, stages in metrics["cosine_at_best_layer"].items():
+        raw = stages["raw"]["mean_off_diagonal"]
+        centered = stages["mean_centered"]["mean_off_diagonal"]
+        cleaned = stages["cleaned"]["mean_off_diagonal"]
+        lines.append(
+            f"{dataset}: mean off-diagonal cosine "
+            f"{raw:.3f} raw, {centered:.3f} mean-centred, {cleaned:.3f} cleaned."
+        )
+    lines.append("Pre-specified cells, keyword-free directions:")
+    pre_specified = metrics.get("pre_specified") or []
+    if not pre_specified:
+        lines.append("  (none)")
+    for row in pre_specified:
+        lines.append(
+            f"  {row['pair']} / {row['emotion']}: mean {row['mean_delta']:.3f}, "
+            f"95% CI [{row['ci_low']:.3f}, {row['ci_high']:.3f}], "
+            f"paraphrase p {row['paraphrase_p']:.3f}, "
+            f"null p(greater) {row['null_p_greater']:.3f}."
+        )
+    lines.append(metrics["caveat"])
+    return "\n".join(lines)
+
+
 def format_score_table(
     scores: dict[str, dict[str, float]],
     emotions: list[str],

@@ -20,13 +20,14 @@ PHASES: dict[str, dict[str, str]] = {
         "status": "implemented",
     },
     "phase02_scenarios": {
-        "title": "Scenarios and tone",
+        "title": "Scenarios",
         "notebook": "notebooks/02_scenarios.ipynb",
         "question": (
-            "Do provoking or impossible prompts activate those directions, and does "
-            "that shift show up in the model's reply tone?"
+            "Once each direction has the shared emotion-versus-neutral component "
+            "removed, do scenario prompts still shift that direction relative to a "
+            "matched control?"
         ),
-        "status": "stub",
+        "status": "implemented",
     },
     "phase03_performance": {
         "title": "Performance",
@@ -62,10 +63,13 @@ def _refuse(experiment: str) -> None:
     )
 
 
-def run_phase02_scenarios(config: ExperimentConfig) -> None:
-    """Future phase: scenario activation and reply tone. Writes nothing."""
-    del config
-    _refuse("phase02_scenarios")
+def run_phase02_scenarios(config: ExperimentConfig):
+    """Scenario gaps on cleaned directions. A stub config still writes nothing."""
+    if config.status != "implemented":
+        _refuse("phase02_scenarios")
+    from llm_emotions.phase02 import run_phase02
+
+    return run_phase02(config)
 
 
 def run_phase03_performance(config: ExperimentConfig) -> None:

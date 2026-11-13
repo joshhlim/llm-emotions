@@ -42,7 +42,10 @@ class ExperimentConfig:
     steering_strengths: list[float] = field(default_factory=_default_strengths)
     steering_prompt: str = DEFAULT_STEERING_PROMPT
     emotions_dir: str | None = None
+    keyword_free_dir: str | None = None
     scenarios_path: str | None = None
+    neutral_prompts_path: str | None = None
+    n_null: int = 400
     output_root: str = "results"
     trust_remote_code: bool = False
     question: str = ""
@@ -58,6 +61,7 @@ class ExperimentConfig:
         self.max_new_tokens = int(self.max_new_tokens)
         self.n_splits = int(self.n_splits)
         self.probe_max_iter = int(self.probe_max_iter)
+        self.n_null = int(self.n_null)
         self.validate()
 
     def validate(self) -> None:
@@ -85,6 +89,8 @@ class ExperimentConfig:
             raise ValueError("steering_prompt must be a non-empty string.")
         if not str(self.output_root).strip():
             raise ValueError("output_root must be a non-empty string.")
+        if not 1 <= self.n_null <= 5000:
+            raise ValueError("n_null must be between 1 and 5000.")
         if self.layers is not None:
             if len(self.layers) == 0:
                 raise ValueError("layers is empty. Use null to mean every layer.")
@@ -169,10 +175,9 @@ def load_config(path: str | Path) -> ExperimentConfig:
     if unknown:
         raise ValueError(f"Unknown config keys in {config_path}: {unknown}")
     base = config_base_dir(config_path)
-    if isinstance(raw.get("emotions_dir"), str):
-        raw["emotions_dir"] = _resolve_config_path(base, raw["emotions_dir"])
-    if isinstance(raw.get("scenarios_path"), str):
-        raw["scenarios_path"] = _resolve_config_path(base, raw["scenarios_path"])
+    for key in ("emotions_dir", "keyword_free_dir", "scenarios_path", "neutral_prompts_path"):
+        if isinstance(raw.get(key), str):
+            raw[key] = _resolve_config_path(base, raw[key])
     if isinstance(raw.get("output_root"), str):
         raw["output_root"] = _resolve_config_path(base, raw["output_root"])
     return ExperimentConfig(**raw)

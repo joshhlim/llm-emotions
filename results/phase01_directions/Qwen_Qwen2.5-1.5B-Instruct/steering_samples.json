@@ -1,0 +1,21 @@
+{
+  "note": "Qualitative samples from one prompt. Fluency can collapse at high strength. This is not a performance evaluation.",
+  "samples": [
+    {
+      "strength": -0.4,
+      "text": "Subject: Project Deadline Missed\n\nDear [Team Member's Name],\n\nI hope this message finds you well.\n\nWe have noticed that there has been an issue with one of our team members not meeting the project deadline. Specifically, the task was supposed to be completed on [Original Due Date], but it was actually submitted on [Actual Submission Date].\n\nPlease let me know if you need any further information or"
+    },
+    {
+      "strength": 0.0,
+      "text": "Dear [Teammate's Name],\n\nI hope this message finds you well.\n\nI wanted to bring to your attention that we have encountered an issue with our project timeline due to a delay in one of our team members' tasks. It seems like they missed their deadline, which has caused some delays for everyone else involved.\n\nPlease let me know if there is anything I can do to help resolve this situation or"
+    },
+    {
+      "strength": 0.4,
+      "text": "I understand that you may have had some personal issues or circumstances that led to your delay in completing the task on time. However, I want to remind you that we all need to be accountable for our actions and responsibilities. It's important to take responsibility for one's mistakes and learn from them.\nIn addition, as a team member, it is essential to respect each other's opinions and work together towards"
+    },
+    {
+      "strength": 0.8,
+      "text": "I understand your feelings, but I don't want you to feel bad for yourself. It's not okay to hurt others or do anything that doesn't make sense. If you can't find words to say something nice, then try writing it in a way that makes sense.\nThe problem is that you're hurting me, and I'm sorry if this isn't true. But I am also sorry because"
+    }
+  ]
+}

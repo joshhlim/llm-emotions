@@ -1,9 +1,21 @@
 {
   "experiment": "phase02_scenarios",
-  "status": "stub",
+  "status": "implemented",
   "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
   "seed": 0,
-  "question": "Do provoking or impossible prompts activate those directions, and does that shift show up in the model's reply tone?",
-  "notes": "Not implemented. The runner must exit without writing results. Phase 01 already projects these prompts onto its directions; that projection is a demo, not this phase. This phase still needs a keyword-free holdout and a tone measure.",
-  "output_root": "results"
+  "layers": null,
+  "batch_size": 8,
+  "max_new_tokens": 80,
+  "n_splits": 5,
+  "n_null": 400,
+  "probe_C": 0.5,
+  "probe_max_iter": 2000,
+  "emotions_dir": "data/emotions",
+  "keyword_free_dir": "data/emotions_keyword_free",
+  "scenarios_path": "data/scenarios/phase2.jsonl",
+  "neutral_prompts_path": "data/scenarios/neutral_baseline.jsonl",
+  "output_root": "results",
+  "trust_remote_code": false,
+  "question": "Once each direction has the shared emotion-versus-neutral component removed, do scenario prompts still shift that direction relative to a matched control?",
+  "notes": "Fits directions on the keyword-heavy set and on a keyword-free set, removes the shared emotion-versus-neutral component, tests transfer both ways, and scores paraphrased scenarios against matched controls and a neutral-prompt baseline. Reply tone is not measured. n_null is the number of matched-norm random directions."
 }
